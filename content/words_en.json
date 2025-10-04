@@ -1,0 +1,11 @@
+{
+  "B1": {
+    "adjectives": [
+      {"word": "reliable", "translation": "надёжный"},
+      {"word": "efficient", "translation": "эффективный"},
+      {"word": "flexible",  "translation": "гибкий"},
+      {"word": "confident", "translation": "уверенный"},
+      {"word": "accurate",  "translation": "точный"}
+    ]
+  }
+}

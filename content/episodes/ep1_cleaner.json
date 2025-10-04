@@ -1,0 +1,17 @@
+{
+  "id": "ep1_cleaner",
+  "title": "The Cleaner",
+  "unlock_if": {"min_level": "A2", "day": 1},
+  "beats": [
+    {"type": "msg", "actor": "Alex", "text": "Кто видел нового уборщика? Он приходит ночью…"},
+    {"type": "msg", "actor": "Mia", "text": "Он поздоровался… будто читает учебник по английскому."},
+    {"type": "asset", "kind": "photo", "url": "scene://locker_bloody_uniform"},
+    {"type": "quiz", "words": ["reliable","efficient","flexible"], "mode": "believe"},
+    {"type": "choice", "options": [
+      {"id": "hide", "label": "Спрятаться"},
+      {"id": "protect", "label": "Встать на защиту"}
+    ]},
+    {"type": "msg", "actor": "System", "text": "Дверь выбита. Нападение."},
+    {"type": "result", "effects": {"cash": 100, "unlock": ["ep2_double"]}}
+  ]
+}
