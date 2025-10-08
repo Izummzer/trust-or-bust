@@ -1,6 +1,5 @@
 # bot/db.py
-import os, asyncpg, ssl, socket
-from urllib.parse import urlparse, unquote
+import os, asyncpg, ssl
 
 _DB_POOL = None
 
@@ -11,28 +10,12 @@ async def get_pool():
         if not dsn:
             raise RuntimeError("DATABASE_URL is not set")
 
-        parsed = urlparse(dsn)
-        host = parsed.hostname
-        port = parsed.port or 5432
-        user = parsed.username
-        password = unquote(parsed.password or "")
-        database = (parsed.path or "/postgres").lstrip("/")
-
-        # Форсируем IPv4 (AF_INET) — берём первый A-запись
-        ipv4 = socket.getaddrinfo(host, port, socket.AF_INET)[0][4][0]
-        print(f"[DB] ipv4={ipv4} db={database}")
-
-        ssl_ctx = ssl.create_default_context()
-
+        ssl_ctx = ssl.create_default_context()  # для Supabase достаточно
         _DB_POOL = await asyncpg.create_pool(
-            user=user,
-            password=password,
-            database=database,
-            host=ipv4,    # ключевой момент — используем IPv4-адрес
-            port=port,
-            ssl=ssl_ctx,
+            dsn,
             min_size=1,
             max_size=5,
+            ssl=ssl_ctx,   # hostname проверится по доменному имени из DSN
             timeout=10
         )
     return _DB_POOL
