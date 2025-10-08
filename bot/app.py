@@ -13,10 +13,19 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- DB only for user provision ---
 try:
-    from db import ensure_user  # в твоём repo: bot/db.py
+    from db import (
+        ensure_user,
+        start_session,
+        finish_session,
+        append_result,
+    )
 except Exception:
-    async def ensure_user(tg_id: int) -> int:
-        return 0
+    # fallback на случай локального запуска без БД
+    async def ensure_user(tg_id: int) -> int: return 0
+    async def start_session(user_id: int, level: str) -> int: return 0
+    async def finish_session(session_id: int, final_balance: int): pass
+    async def append_result(*args, **kwargs): pass
+
 
 # ---------- CONFIG ----------
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
@@ -66,6 +75,7 @@ class UserState:
     level: str = "A2"
     pos: str = "adjectives"
     balance: int = 0
+    session_id: int = 0
     deck: List[WordCard] = field(default_factory=list)       # 5 слов
     morning_idx: int = 0
     evening_idx: int = 0
@@ -378,6 +388,12 @@ async def start_day(cb: CallbackQuery):
     k = min(5, len(bank)) or 1
     s.deck = random.sample(bank, k=k)
     s.study_bank = collect_study_bank(s.deck)
+    # старт новой сессии в БД
+    try:
+        uid = await ensure_user(cb.from_user.id)
+        s.session_id = await start_session(uid, s.level)
+    except Exception:
+        s.session_id = 0  # офлайн-режим
     await cb.message.answer("📘 Этап 1: Определимся со словами")
     await send_next_morning(cb.message, s)
     await cb.answer()
@@ -400,6 +416,11 @@ async def send_next_evening(msg: Message, s: UserState):
 Совпало: {correct}
 Споров: {disputes}
 Баланс: €{s.balance}"""
+        try:
+            if s.session_id:
+                await finish_session(s.session_id, s.balance)
+        except Exception:
+            pass
         await msg.answer(summary, reply_markup=kb_main_menu())
         return
 
@@ -445,6 +466,23 @@ async def on_believe(cb: CallbackQuery):
             "result": "match",
             "delta": 0
         })
+        # лог в БД
+        try:
+            if s.session_id:
+                # баланс не меняется
+                await append_result(
+                    s.session_id,
+                    s.evening_idx,      # текущий индекс
+                    ex.text, ex.text_ru,
+                    truth,
+                    user_choice,
+                    employee_card,
+                    "match",
+                    0,
+                    s.balance
+                )
+        except Exception:
+            pass
         await cb.message.answer("👍 Совпало. Идём дальше.")
         s.evening_idx += 1
         await send_next_evening(cb.message, s)
@@ -533,12 +571,34 @@ async def on_dispute(cb: CallbackQuery):
         highlighted = format_with_highlights(ex.text, ex.error_highlight)
 
     if action == "concede":
+        try:
+            if s.session_id:
+                await append_result(
+                    s.session_id, s.evening_idx,
+                    ex.text, ex.text_ru, truth,
+                    your_choice, s.results[idx]["employee_card"],
+                    "dispute_concede",
+                    -50, s.balance
+                )
+        except Exception:
+            pass
         s.balance -= 50
         s.results[idx]["result"] = "dispute_concede"
         s.results[idx]["delta"] = -50
         await cb.message.answer(f"{GREEN} «Ты прав». Вы платите сотруднику €50.")
     elif action == "check":
         if your_choice == truth:
+            try:
+                if s.session_id:
+                    await append_result(
+                        s.session_id, s.evening_idx,
+                        ex.text, ex.text_ru, truth,
+                        your_choice, s.results[idx]["employee_card"],
+                        "dispute_check_win",
+                        +50, s.balance
+                    )
+            except Exception:
+                pass
             s.balance += 50
             s.results[idx]["result"] = "dispute_check_win"
             s.results[idx]["delta"] = +50
@@ -547,6 +607,17 @@ async def on_dispute(cb: CallbackQuery):
 
 “{highlighted}”""", parse_mode="Markdown")
         else:
+            try:
+                if s.session_id:
+                    await append_result(
+                        s.session_id, s.evening_idx,
+                        ex.text, ex.text_ru, truth,
+                        your_choice, s.results[idx]["employee_card"],
+                        "dispute_check_lose",
+                        -100, s.balance
+                    )
+            except Exception:
+                pass
             s.balance -= 100
             s.results[idx]["result"] = "dispute_check_lose"
             s.results[idx]["delta"] = -100
