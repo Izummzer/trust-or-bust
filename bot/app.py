@@ -1,12 +1,12 @@
 import os
-import csv
+import io, csv
 import random
 import re
 from typing import Dict, List, Optional
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from db import (
@@ -378,28 +378,67 @@ async def on_dispute(cb: CallbackQuery):
     await send_next_evening(cb.message, s)
     await cb.answer()
 
+# @dp.callback_query(F.data == "export_csv")
+# async def export_csv(cb: CallbackQuery):
+#     s = USERS.setdefault(cb.from_user.id, UserState())
+#     if not s.session_id:
+#         await cb.answer("Нет активной сессии.", show_alert=True); return
+
+#     rows = await fetch_export(s.session_id)
+#     if not rows:
+#         await cb.message.answer("Пока нет результатов для экспорта."); return
+
+#     # формируем CSV в памяти
+#     from io import BytesIO
+#     buf = BytesIO()
+#     w = csv.writer(buf)
+#     w.writerow(["created_at","word","translation","shown_en","shown_ru","truth","user_choice","employee_card","delta"])
+#     for r in rows:
+#         w.writerow([
+#             r["created_at"], r["word"], r["translation"], r["shown_en"], r["shown_ru"],
+#             r["truth"], r["user_choice"], r["employee_card"], r["delta"]
+#         ])
+#     buf.seek(0)
+#     await cb.message.answer_document(document=("results.csv", buf))
+
 @dp.callback_query(F.data == "export_csv")
 async def export_csv(cb: CallbackQuery):
     s = USERS.setdefault(cb.from_user.id, UserState())
-    if not s.session_id:
-        await cb.answer("Нет активной сессии.", show_alert=True); return
 
-    rows = await fetch_export(s.session_id)
-    if not rows:
-        await cb.message.answer("Пока нет результатов для экспорта."); return
-
-    # формируем CSV в памяти
-    from io import BytesIO
-    buf = BytesIO()
+    # Пишем в текстовый буфер (StringIO) → затем кодируем в bytes
+    buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["created_at","word","translation","shown_en","shown_ru","truth","user_choice","employee_card","delta"])
-    for r in rows:
+    w.writerow(["created_at","word","translation","shown_en","shown_ru","truth","user_choice","employee_card","delta","balance_after_row"])
+
+    bal = 0
+    # если у тебя есть сохранение даты — подставь, иначе оставим пусто
+    for r in s.results:
+        if isinstance(r.get("delta"), int):
+            bal += r["delta"]
         w.writerow([
-            r["created_at"], r["word"], r["translation"], r["shown_en"], r["shown_ru"],
-            r["truth"], r["user_choice"], r["employee_card"], r["delta"]
+            r.get("created_at",""),
+            r.get("word",""),
+            r.get("translation",""),
+            r.get("text",""),
+            r.get("text_ru",""),
+            r.get("truth",""),
+            r.get("your_choice",""),
+            r.get("employee_card",""),
+            r.get("delta",""),
+            bal
         ])
-    buf.seek(0)
-    await cb.message.answer_document(document=("results.csv", buf))
+
+    # конвертируем в bytes (можно с BOM, чтобы Excel открыл корректно)
+    data = buf.getvalue().encode("utf-8-sig")
+    buf.close()
+
+    filename = f"results_{cb.from_user.id}.csv"
+    file = BufferedInputFile(data=data, filename=filename)
+
+    await cb.message.answer_document(
+        document=file,
+        caption="📄 Экспорт результатов (CSV)"
+    )
 
 async def main():
     print("Bot is running…")
