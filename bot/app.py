@@ -9,7 +9,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.db import (
+from db import (
     ensure_user, upsert_session, set_session_status,
     pick_words_for_level, save_deck, load_deck,
     fetch_ok_example, record_attempt, add_balance, fetch_export
