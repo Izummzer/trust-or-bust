@@ -1,26 +1,29 @@
-import os
-import io, csv
-import random
-import re
-from typing import Dict, List, Optional
+# Trust or Bust — English Game (app.py)
+# aiogram v3, утро/вечер, выбор уровня, «замена ключевого слова»,
+# экспорт CSV. DB используется только для ensure_user.
+
+import os, csv, random, re
+from dataclasses import dataclass, field
+from typing import List, Dict, Optional
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery, BufferedInputFile
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from db import (
-    ensure_user, upsert_session, set_session_status,
-    pick_words_for_level, save_deck, load_deck,
-    fetch_ok_example, fetch_word_id, record_attempt, add_balance, fetch_export
-)
+# --- DB only for user provision ---
+try:
+    from db import ensure_user  # в твоём repo: bot/db.py
+except Exception:
+    async def ensure_user(tg_id: int) -> int:
+        return 0
 
 # ---------- CONFIG ----------
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
 if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN env var is not set")
+    raise RuntimeError("BOT_TOKEN is missing")
 
-# ---------- ASCII-SAFE ICONS ----------
+# ---------- ICONS ----------
 CHECK = "✅"
 CROSS = "❌"
 EMP   = "🧑‍💼"
@@ -33,40 +36,130 @@ ARROW = "➡️"
 DOC   = "📄"
 FLAG  = "🏁"
 
-# ---------- RUNTIME STATE (минимум в памяти для UX) ----------
+# ---------- DATA ----------
+@dataclass
+class Example:
+    text: str
+    text_ru: str
+    uses: List[str]
+    is_correct: bool
+    employee_proposal: Optional[str] = None
+    employee_proposal_ru: Optional[str] = None
+    error_type: Optional[str] = None
+    error_highlight: List[str] = field(default_factory=list)
+    explanation: Optional[str] = None
+    correct_note: Optional[str] = None
+
+@dataclass
+class WordCard:
+    word: str
+    translation: str
+
+@dataclass
+class EveningItem:
+    example: Example
+    employee_card: bool  # True=считает верным, False=считает неверным
+
+@dataclass
 class UserState:
-    def __init__(self):
-        self.stage: str = "idle"          # idle | process | morning | evening | done
-        self.level: str = "A2"
-        self.session_id: Optional[int] = None
-        self.deck: List[Dict] = []         # [{position, word_id, word, translation}]
-        self.morning_idx: int = 0
-        self.evening_idx: int = 0
-        self.morning_shown: Dict[int, str] = {}  # word_id -> en (что показали утром)
-        self.pending: Dict = {}            # контекст активного спора
-        self.user_id: int = 0
+    stage: str = "idle"    # idle | process | morning | evening | done
+    level: str = "A2"
+    pos: str = "adjectives"
+    balance: int = 0
+    deck: List[WordCard] = field(default_factory=list)       # 5 слов
+    morning_idx: int = 0
+    evening_idx: int = 0
+    evening_queue: List[EveningItem] = field(default_factory=list)
+    results: List[Dict] = field(default_factory=list)
+    study_bank: Dict[str, List[tuple]] = field(default_factory=dict)  # {word: [(en,ru), ...]}
 
 USERS: Dict[int, UserState] = {}
 
-# ---------- KEYBOARDS ----------
+# ---------- BANKS ----------
+A2_ADJ = [WordCard("big","большой"), WordCard("small","маленький"),
+          WordCard("easy","лёгкий"), WordCard("hard","трудный"),
+          WordCard("busy","занятой")]
+
+B1_ADJ = [
+    WordCard("reliable","надёжный"),
+    WordCard("efficient","эффективный"),
+    WordCard("flexible","гибкий"),
+    WordCard("confident","уверенный"),
+    WordCard("accurate","точный"),
+    WordCard("productive","продуктивный"),
+    WordCard("creative","креативный"),
+]
+
+B2_ADJ = [
+    WordCard("meticulous","дотошный"),
+    WordCard("versatile","разносторонний"),
+    WordCard("robust","надёжный/устойчивый"),
+    WordCard("scalable","масштабируемый"),
+    WordCard("redundant","избыточный"),
+]
+
+WORD_BANK: Dict[str, List[WordCard]] = {
+    "A1": A2_ADJ,   # следующий уровень
+    "A2": B1_ADJ,
+    "B1": B2_ADJ,
+    "B2": B2_ADJ,
+}
+
+# Утренние (один корректный пример на слово)
+STAGE1_EXAMPLES: Dict[str, Example] = {
+    "reliable":  Example("Our team is reliable and finishes tasks on time.",
+                         "Наша команда надёжная и завершает задачи вовремя.", ["reliable"], True),
+    "efficient": Example("This tool is efficient for our project.",
+                         "Этот инструмент эффективен для нашего проекта.", ["efficient"], True),
+    "flexible":  Example("We need a flexible plan for the week.",
+                         "Нам нужен гибкий план на неделю.", ["flexible"], True),
+    "confident": Example("She is confident about the interview.",
+                         "Она уверена насчёт собеседования.", ["confident"], True),
+    "accurate":  Example("We need accurate data for the report.",
+                         "Нам нужны точные данные для отчёта.", ["accurate"], True),
+    "productive":Example("A short break can make you more productive.",
+                         "Короткий перерыв может сделать вас более продуктивным.", ["productive"], True),
+    "creative":  Example("We need a creative idea for this ad.",
+                         "Нам нужна креативная идея для этой рекламы.", ["creative"], True),
+
+    "meticulous": Example("She is meticulous and checks every detail.",
+                          "Она дотошная и проверяет каждую деталь.", ["meticulous"], True),
+    "versatile":  Example("A versatile employee can do many different tasks.",
+                          "Разносторонний сотрудник может выполнять много разных задач.", ["versatile"], True),
+    "robust":     Example("The system is robust and works under heavy load.",
+                          "Система надёжная и работает под высокой нагрузкой.", ["robust"], True),
+    "scalable":   Example("Our product is scalable and can handle more users.",
+                          "Наш продукт масштабируемый и может выдерживать больше пользователей.", ["scalable"], True),
+    "redundant":  Example("This step is redundant in our process.",
+                          "Этот шаг избыточен в нашем процессе.", ["redundant"], True),
+}
+
+# Вечерние альтернативы (чтобы не повторять утренний пример)
+ALT_OK: Dict[str, List[Example]] = {
+    "reliable":  [Example("A reliable colleague keeps promises.", "Надёжный коллега держит обещания.", ["reliable"], True)],
+    "efficient": [Example("An efficient team saves time and budget.", "Эффективная команда экономит время и бюджет.", ["efficient"], True)],
+    "flexible":  [Example("Flexible policies help employees.", "Гибкие правила помогают сотрудникам.", ["flexible"], True)],
+    "confident": [Example("I feel confident after preparation.", "Я чувствую уверенность после подготовки.", ["confident"], True)],
+    "accurate":  [Example("Accurate numbers are important for decisions.", "Точные цифры важны для принятия решений.", ["accurate"], True)],
+    "productive":[Example("I had a productive day at work.", "У меня был продуктивный день на работе.", ["productive"], True)],
+    "creative":  [Example("She came up with a creative solution.", "Она придумала креативное решение.", ["creative"], True)],
+    "meticulous":[Example("He is meticulous and checks every line.", "Он дотошный и проверяет каждую строчку.", ["meticulous"], True)],
+    "versatile": [Example("A versatile tool is useful in many situations.", "Разносторонний инструмент полезен во многих ситуациях.", ["versatile"], True)],
+    "robust":    [Example("This app is robust and rarely crashes.", "Это приложение надёжно и редко падает.", ["robust"], True)],
+    "scalable":  [Example("The platform is scalable for future growth.", "Платформа масштабируема для будущего роста.", ["scalable"], True)],
+    "redundant": [Example("We removed redundant details from the report.", "Мы убрали избыточные детали из отчёта.", ["redundant"], True)],
+}
+
 def kb_intro():
     kb = InlineKeyboardBuilder()
     kb.button(text="Какой процесс?", callback_data="show_process")
     kb.adjust(1)
     return kb.as_markup()
 
-def kb_process_menu():
-    # на этом шаге даём только "Выбрать уровень"
+def kb_process_only_choose_level():
     kb = InlineKeyboardBuilder()
     kb.button(text=f"{MAG} Выбрать уровень", callback_data="choose_level")
     kb.adjust(1)
-    return kb.as_markup()
-
-def kb_levels():
-    kb = InlineKeyboardBuilder()
-    for lvl in ["A1", "A2", "B1", "B2"]:
-        kb.button(text=lvl, callback_data=f"set_level:{lvl}")
-    kb.adjust(4)
     return kb.as_markup()
 
 def kb_main_menu():
@@ -77,12 +170,18 @@ def kb_main_menu():
     kb.adjust(1)
     return kb.as_markup()
 
-def kb_next(label: Optional[str] = None, data: str = "morning_next"):
+def kb_levels():
+    kb = InlineKeyboardBuilder()
+    for lvl in ["A1","A2","B1","B2"]:
+        kb.button(text=lvl, callback_data=f"set_level:{lvl}")
+    kb.adjust(4)
+    return kb.as_markup()
+
+def kb_next(label=None, data="morning_next"):
     if label is None:
         label = f"{ARROW} К следующему слову"
     kb = InlineKeyboardBuilder()
     kb.button(text=label, callback_data=data)
-    kb.adjust(1)
     return kb.as_markup()
 
 def kb_believe():
@@ -99,39 +198,75 @@ def kb_after_employee():
     kb.adjust(1)
     return kb.as_markup()
 
-# ---------- HELPERS ----------
-def format_with_highlights(text: str, highlights: List[str]) -> str:
-    out = text
-    # более длинные фрагменты подменяем первыми
-    for frag in sorted(highlights, key=len, reverse=True):
-        out = out.replace(frag, f"**_{frag}_**")
-    return out
+def collect_examples_for_word(word: str) -> List[tuple]:
+    pairs: List[tuple] = []
+    if word in STAGE1_EXAMPLES:
+        e = STAGE1_EXAMPLES[word]
+        pairs.append((e.text, e.text_ru))
+    for alt in ALT_OK.get(word, []):
+        pairs.append((alt.text, alt.text_ru))
+    # уникализируем
+    seen, uniq = set(), []
+    for t, r in pairs:
+        key = (t.strip(), r.strip())
+        if key not in seen:
+            seen.add(key); uniq.append(key)
+    return uniq
 
 def _preserve_case(src: str, repl: str) -> str:
     if src.isupper():
         return repl.upper()
-    if src[:1].isupper():
+    if src and src[0].isupper():
         return repl.capitalize()
     return repl
 
-def swap_studied(text: str, target: str, pool_words: List[str]) -> (str, Optional[str]):
-    """
-    Подмена 'target' на случайное другое из pool_words (1 раз, целым словом).
-    """
-    candidates = [w for w in pool_words if w.lower() != target.lower()]
-    if not candidates:
-        return text, None
-    replacement = random.choice(candidates)
-
-    pattern = re.compile(rf"\b{re.escape(target)}\b", flags=re.IGNORECASE)
-
-    def repl(m: re.Match) -> str:
+def swap_word_everywhere(text: str, target: str, replacement: str) -> str:
+    pattern = re.compile(rf"\b{re.escape(target)}\b", re.IGNORECASE)
+    def _f(m: re.Match) -> str:
         return _preserve_case(m.group(0), replacement)
+    return pattern.sub(_f, text)
 
-    swapped = pattern.sub(repl, text, count=1)
-    if swapped == text:
-        return text, None
-    return swapped, replacement
+def make_wrong_swapped_from_bank(base_word: str, deck_words: List[str], study_bank: Dict[str, List[tuple]]) -> Optional[Example]:
+    pairs = study_bank.get(base_word) or []
+    if not pairs:
+        return None
+    base_text, base_ru = random.choice(pairs)
+    candidates = [w for w in deck_words if w.lower() != base_word.lower()]
+    if not candidates:
+        return None
+    replacement = random.choice(candidates)
+    swapped = swap_word_everywhere(base_text, base_word, replacement)
+    if swapped == base_text:
+        return None
+    return Example(
+        text=swapped,
+        text_ru=base_ru,         # перевод оставляем оригинальный
+        uses=[base_word],
+        is_correct=False,
+        employee_proposal=base_text,
+        employee_proposal_ru=base_ru,
+        error_type='semantic',
+        error_highlight=[replacement],
+        explanation="Ключевое слово подменено на другое изучаемое слово."
+    )
+
+def build_evening_queue(deck: List[WordCard], study_bank: Dict[str, List[tuple]]) -> List[EveningItem]:
+    deck_words = [c.word for c in deck]
+    queue: List[EveningItem] = []
+    for card in deck:
+        # новый корректный пример (не утренний), иначе — утренний
+        ok_pool = [e for e in ALT_OK.get(card.word, []) if (card.word in e.uses)]
+        base_ok = random.choice(ok_pool) if ok_pool else STAGE1_EXAMPLES.get(card.word) or Example(
+            f"This is {card.word}.", f"Это {card.word}.", [card.word], True
+        )
+        bad_ex = make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
+        candidates: List[Example] = [base_ok]
+        if bad_ex:
+            candidates.append(bad_ex)
+        ex = random.choice(candidates)
+        queue.append(EveningItem(example=ex, employee_card=True))
+    random.shuffle(queue)
+    return queue
 
 # ---------- BOT ----------
 bot = Bot(BOT_TOKEN)
@@ -139,35 +274,33 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def on_start(m: Message):
-    s = USERS.setdefault(m.from_user.id, UserState())
-    # получаем/создаём профиль в БД
+    # регистрация в БД (без падения, если БД недоступна)
     try:
-        s.user_id = await ensure_user(m.from_user.id)
-    except Exception as e:
-        # не падаем, просто логика без БД
-        s.user_id = 0
-
-    intro_text = (
+        uid = await ensure_user(m.from_user.id)
+        suffix = f"\nВаш профиль создан (id={uid})." if uid else ""
+    except Exception:
+        suffix = ""
+    USERS[m.from_user.id] = UserState()
+    intro = (
         "👔 Welcome to *Trust or Bust: English Game*!\n\n"
         "Вы владелец маленькой консалтинговой фирмы. Компания выходит на международный рынок и вы с сотрудниками "
-        "решили улучшить знание английского — каждый день учить по 5 новых слов. И подкрепить это начинание "
-        "материальной составляющей :)\n\n"
+        "решили улучшить знание английского — каждый день учить по 5 новых слов. И подкрепить это начинание материальной составляющей :)\n\n"
         "Нажми «Какой процесс?».")
-    await m.answer(intro_text, parse_mode="Markdown", reply_markup=kb_intro())
+    await m.answer(intro + suffix, parse_mode="Markdown", reply_markup=kb_intro())
 
 @dp.callback_query(F.data == "show_process")
 async def show_process(cb: CallbackQuery):
     s = USERS.setdefault(cb.from_user.id, UserState())
     s.stage = "process"
     process_text = (
-        "Сначала вы договариваетесь с коллегами о словах которые учите, затем проверяете друг друга.\n\n"
-        "Сотрудник принесёт предложения с этими словами. Вы оцениваете, корректно ли составлено предложение.\n"
-        "Иногда сотрудник может специально включать ошибку, чтобы подловить вас.\n\n"
-        "Вы голосуете «Верно/Не верно». Сотрудник тоже показывает карточку (как он задумывал предложение).\n"
-        "Если мнения совпали — ок. Если нет — можно «Признать» (–€50) или «Проверить в словаре» (+€50/-€100).\n\n"
-        "Выберите уровень, а затем начните игру."
+        "Сначала вы договариваетесь с коллегами о словах, затем проверяете друг друга.\n\n"
+        "Сотрудник принесет предложения с этими словами. Ваша задача — решить, корректно ли предложение.\n\n"
+        "Вы показываете «Верю/Не верю». Сотрудник тоже показывает карточку. "
+        "Если совпало — отлично. Если нет — можно «Признать» (–€50) или «Проверить в словаре» "
+        "(если вы правы +€50, если нет –€100).\n\n"
+        "Выберите уровень, а потом начните игру."
     )
-    await cb.message.answer(process_text, reply_markup=kb_process_menu())
+    await cb.message.answer(process_text, reply_markup=kb_process_only_choose_level())
     await cb.answer()
 
 @dp.callback_query(F.data == "choose_level")
@@ -177,67 +310,77 @@ async def choose_level(cb: CallbackQuery):
 
 @dp.callback_query(F.data.startswith("set_level:"))
 async def set_level(cb: CallbackQuery):
-    lvl = cb.data.split(":", 1)[1]
+    level = cb.data.split(":",1)[1]
     s = USERS.setdefault(cb.from_user.id, UserState())
-    s.level = lvl
+    s.level = level
     await cb.message.answer(
-        f"✅ Уровень установлен: *{lvl}*\n\nТеперь можно перейти к игре:",
+        f"✅ Уровень установлен: *{level}*\n\nТеперь можно перейти к игре:",
         parse_mode="Markdown",
         reply_markup=kb_main_menu()
     )
     await cb.answer()
 
+async def send_next_morning(msg: Message, s: UserState):
+    if s.morning_idx >= len(s.deck):
+        s.stage = "evening"
+        s.evening_idx = 0
+        s.evening_queue = build_evening_queue(s.deck, s.study_bank)
+        await msg.answer("🔎 Этап 2: Проверим предложения сотрудников")
+        await send_next_evening(msg, s)
+        return
+
+    n = s.morning_idx + 1
+    N = len(s.deck)
+    card = s.deck[s.morning_idx]
+
+    sample_ok = STAGE1_EXAMPLES.get(card.word)
+    if not sample_ok:
+        alt = ALT_OK.get(card.word, [])
+        sample_ok = alt[0] if alt else Example(
+            f"This is {card.word}.", f"Это {card.translation}.", [card.word], True
+        )
+
+    text = (
+        f"Слово {n} из {N}\n\n"
+        f"**{card.word}** — {card.translation}\n\n"
+        f"Пример:\n“{sample_ok.text}”\n_{sample_ok.text_ru}_"
+    )
+    label = "➡️ Перейти к проверке" if n == N else None
+    await msg.answer(text, parse_mode="Markdown", reply_markup=kb_next(label=label, data="morning_next"))
+
+def collect_study_bank(deck: List[WordCard]) -> Dict[str, List[tuple]]:
+    bank: Dict[str, List[tuple]] = {}
+    for c in deck:
+        pairs = []
+        if c.word in STAGE1_EXAMPLES:
+            e = STAGE1_EXAMPLES[c.word]
+            pairs.append((e.text, e.text_ru))
+        for alt in ALT_OK.get(c.word, []):
+            pairs.append((alt.text, alt.text_ru))
+        # уникализируем
+        seen, uniq = set(), []
+        for t, r in pairs:
+            key = (t.strip(), r.strip())
+            if key not in seen:
+                seen.add(key); uniq.append(key)
+        bank[c.word] = uniq
+    return bank
+
 @dp.callback_query(F.data == "start_day")
 async def start_day(cb: CallbackQuery):
     s = USERS.setdefault(cb.from_user.id, UserState())
     s.stage = "morning"
+    s.balance = 0
+    s.results.clear()
     s.morning_idx = 0
     s.evening_idx = 0
-    s.morning_shown.clear()
-    s.pending.clear()
-
-    user_id = await ensure_user(cb.from_user.id)
-    # создаём сессию
-    s.session_id = await upsert_session(user_id, s.level)
-    # набираем 5 слов следующего уровня, сохраняем в deck
-    words = await pick_words_for_level(s.level, pos="adjectives", n=5)
-    await save_deck(s.session_id, [w["id"] for w in words])
-    s.deck = await load_deck(s.session_id)
-
+    bank = WORD_BANK.get(s.level) or B1_ADJ
+    k = min(5, len(bank)) or 1
+    s.deck = random.sample(bank, k=k)
+    s.study_bank = collect_study_bank(s.deck)
     await cb.message.answer("📘 Этап 1: Определимся со словами")
     await send_next_morning(cb.message, s)
     await cb.answer()
-
-async def send_next_morning(msg: Message, s: UserState):
-    # переход к вечеру
-    if s.morning_idx >= len(s.deck):
-        await set_session_status(s.session_id, "evening")
-        s.stage = "evening"
-        s.evening_idx = 0
-        await msg.answer("📗 Этап 2: Проверим предложения сотрудников")
-        await send_next_evening(msg, s)
-        return
-
-    item = s.deck[s.morning_idx]
-    ok = await fetch_ok_example(item["word_id"])
-    # запомним показанный утром EN, чтоб избежать повтора вечером
-    if ok:
-        s.morning_shown[item["word_id"]] = ok["en"]
-        text = (
-            f"Слово {s.morning_idx+1}/5\n\n"
-            f"*{item['word']}* — {item['translation']}\n\n"
-            f"Пример:\n“{ok['en']}”\n_{ok['ru']}_"
-        )
-    else:
-        text = (
-            f"Слово {s.morning_idx+1}/5\n\n"
-            f"*{item['word']}* — {item['translation']}\n\n"
-            f"_Пример пока не добавлен._"
-        )
-    # на последней карточке меняем подпись
-    last = (s.morning_idx + 1 == len(s.deck))
-    await msg.answer(text, parse_mode="Markdown",
-                     reply_markup=kb_next("➡️ Перейти к проверке" if last else None, "morning_next"))
 
 @dp.callback_query(F.data == "morning_next")
 async def on_morning_next(cb: CallbackQuery):
@@ -249,216 +392,202 @@ async def on_morning_next(cb: CallbackQuery):
     await cb.answer()
 
 async def send_next_evening(msg: Message, s: UserState):
-    if s.evening_idx >= len(s.deck):
-        await set_session_status(s.session_id, "done")
+    if s.evening_idx >= len(s.evening_queue):
         s.stage = "done"
-        await msg.answer("🏁 День завершён. Можешь экспортировать результаты.", reply_markup=kb_main_menu())
+        correct = sum(1 for r in s.results if r["result"] == "match")
+        disputes = sum(1 for r in s.results if str(r["result"]).startswith("dispute"))
+        summary = f"""\n{FLAG} День завершён.
+Совпало: {correct}
+Споров: {disputes}
+Баланс: €{s.balance}"""
+        await msg.answer(summary, reply_markup=kb_main_menu())
         return
 
-    deck_words = [d["word"] for d in s.deck]
-    item = s.deck[s.evening_idx]
+    item = s.evening_queue[s.evening_idx]
+    ex = item.example
+    body = f"""Предложение {s.evening_idx+1}/{len(s.evening_queue)}:
 
-    # взять корректный пример НЕ равный утреннему
-    exclude = [s.morning_shown.get(item["word_id"])] if s.morning_shown.get(item["word_id"]) else []
-    ok = await fetch_ok_example(item["word_id"], exclude_en=exclude)
-    if ok:
-        base_en, base_ru, base_id = ok["en"], ok["ru"], ok["id"]
-    else:
-        base_en, base_ru, base_id = f"This is {item['word']}.", f"Это {item['translation']}.", None
+“{ex.text}”
+_{ex.text_ru}_
 
-    # построить неверный вариант — подмена ключевого слова на другое из пятёрки
-    swapped_en, replaced = swap_studied(base_en, item["word"], deck_words)
-    bad_available = (replaced is not None and swapped_en != base_en)
-
-    # выбрать, что показать игроку
-    if bad_available and random.random() < 0.5:
-        shown_en, shown_ru, truth, example_id = swapped_en, base_ru, False, base_id
-    else:
-        shown_en, shown_ru, truth, example_id = base_en, base_ru, True, base_id
-
-    # сохранить контекст задания для этапа спора
-    s.pending = {
-        "session_id": s.session_id,
-        "word_id": item["word_id"],
-        "shown_en": shown_en,
-        "shown_ru": shown_ru,
-        "truth": truth,
-        "example_id": example_id,
-        "correct_en": base_en,
-        "correct_ru": base_ru,
-    }
-
-    body = (
-        f"Предложение {s.evening_idx+1}/5:\n\n"
-        f"“{shown_en}”\n_{shown_ru}_\n\n"
-        f"Веришь, что корректно?"
-    )
+Веришь, что корректно?"""
     await msg.answer(body, parse_mode="Markdown", reply_markup=kb_believe())
 
 @dp.callback_query(F.data.startswith("believe:"))
 async def on_believe(cb: CallbackQuery):
+    user_choice = cb.data.split(":")[1] == "True"
     s = USERS.setdefault(cb.from_user.id, UserState())
-    if s.stage != "evening" or not s.pending:
+    if s.stage != "evening":
         await cb.answer("Сейчас не проверка.", show_alert=True); return
 
-    user_choice = (cb.data.split(":")[1] == "True")
-    p = s.pending
-    truth = p["truth"]
+    item = s.evening_queue[s.evening_idx]
+    ex = item.example
+    truth = ex.is_correct
 
-    # карточка сотрудника: если игрок ошибся → сотрудник показывает истину; если прав → 30% ошибается
+    # если игрок ошибся → сотрудник показывает истину (всегда)
+    # если игрок прав → сотрудник может ошибиться (30%)
     if user_choice != truth:
         employee_card = truth
     else:
         employee_card = truth if random.random() < 0.7 else (not truth)
 
-    await cb.message.answer("🧑‍💼 Карточка сотрудника: " + ("✅ Верно" if employee_card else "❌ Не верно"))
+    await cb.message.answer(
+        f"{EMP} Карточка сотрудника: " + (f"{CHECK} Верно" if employee_card else f"{CROSS} Не верно")
+    )
 
+    # совпали карточки — просто далее
     if user_choice == employee_card:
-        # мнения совпали — фиксируем попытку без денег и идём дальше
-        await record_attempt(
-            s.session_id, p["word_id"], p["example_id"],
-            p["shown_en"], p["shown_ru"], truth,
-            user_choice, employee_card, 0
-        )
+        s.results.append({
+            "text": ex.text,
+            "truth": truth,
+            "your_choice": user_choice,
+            "employee_card": employee_card,
+            "result": "match",
+            "delta": 0
+        })
         await cb.message.answer("👍 Совпало. Идём дальше.")
         s.evening_idx += 1
-        s.pending = {}
         await send_next_evening(cb.message, s)
         await cb.answer(); return
 
-    # разногласие: если сотрудник сказал «❌», он показывает "как правильно"
-    if not employee_card:
-        await cb.message.answer(
-            "📝 Сотрудник предлагает вариант:\n"
-            f"“{p['correct_en']}”\n_{p['correct_ru']}_",
-            parse_mode="Markdown"
-        )
-    else:
-        await cb.message.answer("🧑‍💼 Сотрудник настаивает на своём варианте.")
+    # разногласие
+    proposal = ex.employee_proposal
+    proposal_ru = ex.employee_proposal_ru
 
-    # сохраним параметры спора
-    p["user_choice"] = user_choice
-    p["employee_card"] = employee_card
-    s.pending = p
+    if not employee_card:
+        # сотрудник сказал ❌
+        if truth is True:
+            # игрок прав, сотрудник ошибается → он предложит «поправку», которая ошибочна:
+            # сделаем её как «слово-подмена»
+            deck_words = [c.word for c in s.deck]
+            wrong_pair = None
+            # соберём корректный Example, из которого сделаем ошибочный
+            src_ok = Example(text=ex.text, text_ru=ex.text_ru, uses=ex.uses, is_correct=True)
+            # переиспользуем механизм замены:
+            # NOTE: здесь мы оставляем перевод оригинала
+            if src_ok.uses:
+                base_word = src_ok.uses[0]
+                candidates = [w for w in deck_words if w.lower() != base_word.lower()]
+                if candidates:
+                    repl = random.choice(candidates)
+                    wrong_text = swap_word_everywhere(src_ok.text, base_word, repl)
+                    if wrong_text != src_ok.text:
+                        proposal, proposal_ru = wrong_text, src_ok.text_ru
+        else:
+            # истина = ошибка, сотрудник прав → предложит корректный вариант
+            if not proposal and ex.uses:
+                base = STAGE1_EXAMPLES.get(ex.uses[0])
+                if base:
+                    proposal, proposal_ru = base.text, base.text_ru
+    else:
+        proposal = None
+        proposal_ru = None
+
+    if proposal:
+        await cb.message.answer(f"""{NOTE} Сотрудник предлагает вариант:
+“{proposal}”
+_{proposal_ru or ''}_""", parse_mode="Markdown")
+    else:
+        await cb.message.answer(f"{EMP} Сотрудник настаивает на своём варианте.")
+
+    s.results.append({
+        "text": ex.text,
+        "truth": truth,
+        "your_choice": user_choice,
+        "employee_card": employee_card,
+        "result": "dispute_wait",
+        "delta": None
+    })
 
     await cb.message.answer("Твой ход:", reply_markup=kb_after_employee())
     await cb.answer()
 
+def format_with_highlights(text: str, highlights: List[str]) -> str:
+    out = text
+    for frag in sorted(highlights, key=len, reverse=True):
+        out = out.replace(frag, f"**_{frag}_**")
+    return out
+
 @dp.callback_query(F.data.startswith("dispute:"))
 async def on_dispute(cb: CallbackQuery):
+    action = cb.data.split(":",1)[1]
     s = USERS.setdefault(cb.from_user.id, UserState())
-    if s.stage != "evening" or not s.pending:
-        await cb.answer("Нет активного спора.", show_alert=True); return
+    if s.stage != "evening":
+        await cb.answer("Сейчас не спор.", show_alert=True); return
 
-    action = cb.data.split(":")[1]  # concede | check
-    p = s.pending
-    truth = p["truth"]
-    user_choice = p["user_choice"]
-    employee_card = p["employee_card"]
+    idx = next((i for i in range(len(s.results)-1, -1, -1)
+                if s.results[i]["result"] == "dispute_wait" and s.results[i]["delta"] is None), None)
+    if idx is None:
+        await cb.answer("Не найден спор.", show_alert=True); return
 
-    # подсчёт дельты
-    if action == "concede":
-        delta = -50
-        note  = "Признали сотрудника: −€50."
+    item = s.evening_queue[s.evening_idx]
+    ex = item.example
+    truth = ex.is_correct
+    your_choice = s.results[idx]["your_choice"]
+
+    if truth:
+        note = ex.correct_note or "Предложение корректно."
+        highlighted = ex.text
     else:
-        if user_choice == truth:
-            delta = +50
-            note  = "Проверили: вы были правы. +€50."
+        note = ex.explanation or "В предложении есть ошибка."
+        highlighted = format_with_highlights(ex.text, ex.error_highlight)
+
+    if action == "concede":
+        s.balance -= 50
+        s.results[idx]["result"] = "dispute_concede"
+        s.results[idx]["delta"] = -50
+        await cb.message.answer(f"{GREEN} «Ты прав». Вы платите сотруднику €50.")
+    elif action == "check":
+        if your_choice == truth:
+            s.balance += 50
+            s.results[idx]["result"] = "dispute_check_win"
+            s.results[idx]["delta"] = +50
+            await cb.message.answer(f"""{CHECK} Проверка: вы оказались правы. Сотрудник пристыжен.
+{note}
+
+“{highlighted}”""", parse_mode="Markdown")
         else:
-            delta = -100
-            note  = "Проверили: вы были неправы. −€100."
+            s.balance -= 100
+            s.results[idx]["result"] = "dispute_check_lose"
+            s.results[idx]["delta"] = -100
+            await cb.message.answer(f"""{CROSS} Проверка: вы оказались неправы. Сотрудник ликует.
+{note}
 
-    # запись в БД
-    user_id = await ensure_user(cb.from_user.id)
-    await add_balance(user_id, delta)
-    await record_attempt(
-        s.session_id, p["word_id"], p["example_id"],
-        p["shown_en"], p["shown_ru"], truth,
-        user_choice, employee_card, delta
-    )
+“{highlighted}”""", parse_mode="Markdown")
+    else:
+        await cb.answer("Неизвестное действие.", show_alert=True); return
 
-    await cb.message.answer(note)
-    s.pending = {}
     s.evening_idx += 1
     await send_next_evening(cb.message, s)
     await cb.answer()
-    
 
 @dp.callback_query(F.data == "export_csv")
 async def export_csv(cb: CallbackQuery):
-    # Пытаемся взять из БД
-    rows = None
-    try:
-        # fetch_export должен вернуть список dict или список tuple
-        rows = await fetch_export(cb.from_user.id)
-    except Exception:
-        rows = None  # если функции нет/упала — пойдём в фоллбэк
-
-    headers = ["created_at","word","translation","shown_en","shown_ru",
-               "truth","user_choice","employee_card","delta","balance_after_row"]
-
-    buf = io.StringIO()
-    w = csv.writer(buf)
-    w.writerow(headers)
-
-    bal = 0
-
-    if rows:
-        # Нормальный путь: экспорт из БД
-        for r in rows:
-            if isinstance(r, dict):
-                delta = r.get("delta") or 0
-                bal += delta if isinstance(delta, int) else 0
-                w.writerow([
-                    r.get("created_at",""),
-                    r.get("word",""),
-                    r.get("translation",""),
-                    r.get("shown_en",""),
-                    r.get("shown_ru",""),
-                    r.get("truth",""),
-                    r.get("user_choice",""),
-                    r.get("employee_card",""),
-                    delta,
-                    bal
-                ])
-            else:
-                # tuple-ветка: ожидаем порядок полей как в SELECT ниже
-                (created_at, word, translation, shown_en, shown_ru,
-                 truth, user_choice, employee_card, delta) = r
-                delta = delta or 0
-                bal += delta if isinstance(delta, int) else 0
-                w.writerow([created_at, word, translation, shown_en, shown_ru,
-                            truth, user_choice, employee_card, delta, bal])
-    else:
-        # Фоллбэк: если вдруг ещё используешь in-memory результат
-        s = USERS.get(cb.from_user.id)
-        results = getattr(s, "results", []) if s else []
-        for r in results:
-            delta = r.get("delta") if isinstance(r.get("delta"), int) else 0
-            bal += delta
+    s = USERS.setdefault(cb.from_user.id, UserState())
+    # сохраняем из оперативной памяти текущей сессии (как раньше)
+    filename = f"results_{cb.from_user.id}.csv"
+    with open(filename, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["sentence","truth","your_choice","employee_card","result","delta","balance_after_row"])
+        bal = 0
+        for r in s.results:
+            if isinstance(r.get("delta"), int):
+                bal += r["delta"]
             w.writerow([
-                r.get("created_at",""),
-                r.get("word",""),
-                r.get("translation",""),
                 r.get("text",""),
-                r.get("text_ru",""),
                 r.get("truth",""),
                 r.get("your_choice",""),
                 r.get("employee_card",""),
+                r.get("result",""),
                 r.get("delta",""),
                 bal
             ])
-
-    data = buf.getvalue().encode("utf-8-sig")
-    buf.close()
-
-    filename = f"results_{cb.from_user.id}.csv"
     await cb.message.answer_document(
-        BufferedInputFile(data, filename),
-        caption="📄 Экспорт результатов (CSV)"
+        FSInputFile(filename),
+        caption=f"{DOC} Экспорт готов."
     )
 
-
+# ---------- RUN ----------
 async def main():
     print("Bot is running…")
     await dp.start_polling(bot)
