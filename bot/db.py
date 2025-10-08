@@ -1,4 +1,6 @@
+# bot/db.py
 import os, asyncpg, ssl
+import certifi  # ← добавили
 
 _DB_POOL = None
 
@@ -9,7 +11,10 @@ async def get_pool():
         if not dsn:
             raise RuntimeError("DATABASE_URL is not set")
 
-        ssl_ctx = ssl.create_default_context()  # проверяет сертификат
+        # Используем свежий корневой стор от certifi
+        ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+        # (hostname проверка включена по умолчанию)
+
         _DB_POOL = await asyncpg.create_pool(
             dsn,
             min_size=1,
