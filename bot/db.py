@@ -145,15 +145,38 @@ async def add_balance(user_id:int, delta:int):
           on conflict (user_id) do update set balance=wallets.balance+excluded.balance
         """, user_id, delta)
 
-async def fetch_export(session_id:int) -> List[Dict]:
+# async def fetch_export(session_id:int) -> List[Dict]:
+#     pool = await get_pool()
+#     async with pool.acquire() as c:
+#         rows = await c.fetch("""
+#           select a.created_at, w.word, w.translation, a.shown_en, a.shown_ru,
+#                  a.truth, a.user_choice, a.employee_card, a.delta
+#           from attempts a
+#           join words w on w.id=a.word_id
+#           where a.session_id=$1
+#           order by a.id
+#         """, session_id)
+#         return [dict(r) for r in rows]
+
+async def fetch_export(user_id: int):
     pool = await get_pool()
-    async with pool.acquire() as c:
-        rows = await c.fetch("""
-          select a.created_at, w.word, w.translation, a.shown_en, a.shown_ru,
-                 a.truth, a.user_choice, a.employee_card, a.delta
-          from attempts a
-          join words w on w.id=a.word_id
-          where a.session_id=$1
-          order by a.id
-        """, session_id)
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT
+                a.created_at::text                             AS created_at,
+                COALESCE(w.word, '')                           AS word,
+                COALESCE(w.translation, '')                    AS translation,
+                a.shown_en,
+                a.shown_ru,
+                a.truth,
+                a.user_choice,
+                a.employee_card,
+                a.delta
+            FROM attempts a
+            LEFT JOIN words w ON w.id = a.word_id
+            WHERE a.user_id = $1
+            ORDER BY a.created_at
+        """, user_id)
+        # Вернём список dict для удобства
         return [dict(r) for r in rows]
+
