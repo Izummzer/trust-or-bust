@@ -377,66 +377,79 @@ async def on_dispute(cb: CallbackQuery):
     s.evening_idx += 1
     await send_next_evening(cb.message, s)
     await cb.answer()
-
-# @dp.callback_query(F.data == "export_csv")
-# async def export_csv(cb: CallbackQuery):
-#     s = USERS.setdefault(cb.from_user.id, UserState())
-#     if not s.session_id:
-#         await cb.answer("Нет активной сессии.", show_alert=True); return
-
-#     rows = await fetch_export(s.session_id)
-#     if not rows:
-#         await cb.message.answer("Пока нет результатов для экспорта."); return
-
-#     # формируем CSV в памяти
-#     from io import BytesIO
-#     buf = BytesIO()
-#     w = csv.writer(buf)
-#     w.writerow(["created_at","word","translation","shown_en","shown_ru","truth","user_choice","employee_card","delta"])
-#     for r in rows:
-#         w.writerow([
-#             r["created_at"], r["word"], r["translation"], r["shown_en"], r["shown_ru"],
-#             r["truth"], r["user_choice"], r["employee_card"], r["delta"]
-#         ])
-#     buf.seek(0)
-#     await cb.message.answer_document(document=("results.csv", buf))
+    
 
 @dp.callback_query(F.data == "export_csv")
 async def export_csv(cb: CallbackQuery):
-    s = USERS.setdefault(cb.from_user.id, UserState())
+    # Пытаемся взять из БД
+    rows = None
+    try:
+        # fetch_export должен вернуть список dict или список tuple
+        rows = await fetch_export(cb.from_user.id)
+    except Exception:
+        rows = None  # если функции нет/упала — пойдём в фоллбэк
 
-    # Пишем в текстовый буфер (StringIO) → затем кодируем в bytes
+    headers = ["created_at","word","translation","shown_en","shown_ru",
+               "truth","user_choice","employee_card","delta","balance_after_row"]
+
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["created_at","word","translation","shown_en","shown_ru","truth","user_choice","employee_card","delta","balance_after_row"])
+    w.writerow(headers)
 
     bal = 0
-    # если у тебя есть сохранение даты — подставь, иначе оставим пусто
-    for r in s.results:
-        if isinstance(r.get("delta"), int):
-            bal += r["delta"]
-        w.writerow([
-            r.get("created_at",""),
-            r.get("word",""),
-            r.get("translation",""),
-            r.get("text",""),
-            r.get("text_ru",""),
-            r.get("truth",""),
-            r.get("your_choice",""),
-            r.get("employee_card",""),
-            r.get("delta",""),
-            bal
-        ])
 
-    # конвертируем в bytes (можно с BOM, чтобы Excel открыл корректно)
+    if rows:
+        # Нормальный путь: экспорт из БД
+        for r in rows:
+            if isinstance(r, dict):
+                delta = r.get("delta") or 0
+                bal += delta if isinstance(delta, int) else 0
+                w.writerow([
+                    r.get("created_at",""),
+                    r.get("word",""),
+                    r.get("translation",""),
+                    r.get("shown_en",""),
+                    r.get("shown_ru",""),
+                    r.get("truth",""),
+                    r.get("user_choice",""),
+                    r.get("employee_card",""),
+                    delta,
+                    bal
+                ])
+            else:
+                # tuple-ветка: ожидаем порядок полей как в SELECT ниже
+                (created_at, word, translation, shown_en, shown_ru,
+                 truth, user_choice, employee_card, delta) = r
+                delta = delta or 0
+                bal += delta if isinstance(delta, int) else 0
+                w.writerow([created_at, word, translation, shown_en, shown_ru,
+                            truth, user_choice, employee_card, delta, bal])
+    else:
+        # Фоллбэк: если вдруг ещё используешь in-memory результат
+        s = USERS.get(cb.from_user.id)
+        results = getattr(s, "results", []) if s else []
+        for r in results:
+            delta = r.get("delta") if isinstance(r.get("delta"), int) else 0
+            bal += delta
+            w.writerow([
+                r.get("created_at",""),
+                r.get("word",""),
+                r.get("translation",""),
+                r.get("text",""),
+                r.get("text_ru",""),
+                r.get("truth",""),
+                r.get("your_choice",""),
+                r.get("employee_card",""),
+                r.get("delta",""),
+                bal
+            ])
+
     data = buf.getvalue().encode("utf-8-sig")
     buf.close()
 
     filename = f"results_{cb.from_user.id}.csv"
-    file = BufferedInputFile(data=data, filename=filename)
-
     await cb.message.answer_document(
-        document=file,
+        BufferedInputFile(data=data, filename=filename),
         caption="📄 Экспорт результатов (CSV)"
     )
 
