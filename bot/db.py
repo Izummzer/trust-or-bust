@@ -1,205 +1,76 @@
 # bot/db.py
 import os, ssl, certifi, asyncpg
-from typing import List, Dict, Optional
+from typing import Optional
 
-_DB_POOL = None
+_DB_POOL: Optional[asyncpg.Pool] = None
 
-def _make_ssl_ctx() -> ssl.SSLContext:
-    """
-    SSL-контекст: сперва пробуем CA Supabase (если переменная SUPABASE_CA указывает на файл),
-    иначе используем certifi bundle.
-    """
-    ca = os.getenv("SUPABASE_CA")
-    if ca and os.path.exists(ca):
-        return ssl.create_default_context(cafile=ca)
-    return ssl.create_default_context(cafile=certifi.where())
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is missing")
 
-async def get_pool():
-    """
-    Пул соединений к Supabase.
-    ВАЖНО: statement_cache_size=0 из-за PgBouncer (transaction pooler).
-    """
+# В Railway + Supabase используем verify-full и корневой CA
+_SSL_CTX = ssl.create_default_context(cafile=certifi.where())
+
+async def get_pool() -> asyncpg.Pool:
     global _DB_POOL
     if _DB_POOL is None:
-        dsn = os.getenv("DATABASE_URL")
-        if not dsn:
-            raise RuntimeError("DATABASE_URL is not set")
         _DB_POOL = await asyncpg.create_pool(
-            dsn,
-            ssl=_make_ssl_ctx(),
-            min_size=1,
-            max_size=5,
-            timeout=10,
-            statement_cache_size=0
+            DATABASE_URL,
+            min_size=1, max_size=5,
+            ssl=_SSL_CTX,
+            statement_cache_size=0  # важно из-за pgbouncer
         )
     return _DB_POOL
 
-# async def get_pool():
-#     global _DB_POOL
-#     if _DB_POOL:
-#         return _DB_POOL
-#     dsn = os.environ["DATABASE_URL"]
-#     ssl_ctx = ssl.create_default_context(cafile=certifi.where())
-#     _DB_POOL = await asyncpg.create_pool(dsn, min_size=1, max_size=5, ssl=ssl_ctx, statement_cache_size=0)
-#     return _DB_POOL
-
-# -------------------- USERS --------------------
-
-async def ensure_user(telegram_id: int) -> int:
+# --- USERS ---
+async def ensure_user(tg_id: int) -> int:
     pool = await get_pool()
-    async with pool.acquire() as c:
-        await c.execute("""
-            insert into users(telegram_id) values ($1)
-            on conflict (telegram_id) do nothing
-        """, telegram_id)
-        row = await c.fetchrow("select id from users where telegram_id=$1", telegram_id)
-        return row["id"]
-        
-# async def ensure_user(tg_id: int) -> int:
-#     pool = await get_pool()
-#     async with pool.acquire() as conn:
-#         return await conn.fetchval("""
-#             INSERT INTO users (tg_id)
-#             VALUES ($1)
-#             ON CONFLICT (tg_id) DO UPDATE SET tg_id = EXCLUDED.tg_id
-#             RETURNING id
-#         """, tg_id)
+    async with pool.acquire() as conn:
+        uid = await conn.fetchval(
+            """insert into users(tg_id)
+               values($1)
+               on conflict (tg_id) do update set tg_id=excluded.tg_id
+               returning id""",
+            tg_id
+        )
+        return uid
 
-# -------------------- SESSIONS / DECK --------------------
-
-NEXT_LEVEL = {"A1": "A2", "A2": "B1", "B1": "B2", "B2": "B2"}
-
-async def upsert_session(user_id: int, level: str) -> int:
+# --- SESSIONS ---
+async def start_session(user_id: int, level: str) -> int:
     pool = await get_pool()
-    async with pool.acquire() as c:
-        sid = await c.fetchval("""
-          insert into sessions(user_id, level, status)
-          values($1,$2,'morning')
-          returning id
-        """, user_id, level)
+    async with pool.acquire() as conn:
+        sid = await conn.fetchval(
+            "insert into sessions(user_id, level) values($1,$2) returning id",
+            user_id, level
+        )
         return sid
 
-async def set_session_status(session_id: int, status: str):
+async def finish_session(session_id: int, final_balance: int) -> None:
     pool = await get_pool()
-    async with pool.acquire() as c:
-        await c.execute("update sessions set status=$2 where id=$1", session_id, status)
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "update sessions set finished_at=now(), balance=$2 where id=$1",
+            session_id, final_balance
+        )
 
-async def pick_words_for_level(level: str, pos: str, n: int = 5) -> List[Dict]:
-    pool = await get_pool()
-    async with pool.acquire() as c:
-        rows = await c.fetch("""
-          select id, word, translation
-          from words
-          where level=$1 and pos=$2
-          order by random() limit $3
-        """, NEXT_LEVEL.get(level, "B1"), pos, n)
-        return [dict(r) for r in rows]
-
-async def save_deck(session_id: int, word_ids: List[int]):
-    pool = await get_pool()
-    async with pool.acquire() as c:
-        for i, wid in enumerate(word_ids, start=1):
-            await c.execute("""
-              insert into session_deck(session_id, word_id, position)
-              values ($1,$2,$3)
-              on conflict (session_id, position) do update set word_id=excluded.word_id
-            """, session_id, wid, i)
-
-async def load_deck(session_id: int) -> List[Dict]:
-    pool = await get_pool()
-    async with pool.acquire() as c:
-        rows = await c.fetch("""
-          select sd.position, w.id as word_id, w.word, w.translation
-          from session_deck sd
-          join words w on w.id=sd.word_id
-          where sd.session_id=$1
-          order by sd.position
-        """, session_id)
-        return [dict(r) for r in rows]
-
-# -------------------- EXAMPLES --------------------
-
-async def fetch_ok_example(word_id: int, exclude_en: Optional[List[str]] = None) -> Optional[Dict]:
-    """
-    Берём корректный пример для слова, можно исключить тексты, которые показали утром.
-    """
-    exclude_en = exclude_en or []
-    pool = await get_pool()
-    async with pool.acquire() as c:
-        if exclude_en:
-            rows = await c.fetch("""
-              select id, en, ru from examples
-              where word_id=$1 and kind='ok' and not (en = any($2::text[]))
-              order by random() limit 1
-            """, word_id, exclude_en)
-        else:
-            rows = await c.fetch("""
-              select id, en, ru from examples
-              where word_id=$1 and kind='ok'
-              order by random() limit 1
-            """, word_id)
-        return dict(rows[0]) if rows else None
-
-# -------------------- ATTEMPTS / WALLET / EXPORT --------------------
-
-# async def record_attempt(session_id:int, word_id:int, example_id:int|None,
-#                         shown_en:str, shown_ru:str, truth:bool,
-#                         user_choice:bool, employee_card:bool, delta:int):
-#     pool = await get_pool()
-#     async with pool.acquire() as c:
-#         await c.execute("""
-#           insert into attempts(session_id, word_id, example_id,
-#                                shown_en, shown_ru, truth, user_choice, employee_card, delta, resolved)
-#           values($1,$2,$3,$4,$5,$6,$7,$8,$9,true)
-#         """, session_id, word_id, example_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
-
-async def record_attempt(
-    user_id: int,
-    word_id: int | None,
-    shown_en: str,
-    shown_ru: str,
+# --- RESULTS ---
+async def append_result(
+    session_id: int,
+    item_index: int,
+    sentence_en: str,
+    sentence_ru: str,
     truth: bool,
     user_choice: bool,
     employee_card: bool,
-    delta: int
-):
+    outcome: str,
+    delta: Optional[int],
+    balance_after: Optional[int]
+) -> None:
     pool = await get_pool()
     async with pool.acquire() as conn:
-        await conn.execute("""
-            INSERT INTO attempts (user_id, word_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-        """, user_id, word_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
-
-
-async def fetch_word_id(word: str) -> int | None:
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow("SELECT id FROM words WHERE lower(word)=lower($1) LIMIT 1", word)
-        return row["id"] if row else None
-
-
-async def add_balance(user_id:int, delta:int):
-    pool = await get_pool()
-    async with pool.acquire() as c:
-        await c.execute("""
-          insert into wallets(user_id, balance) values ($1,$2)
-          on conflict (user_id) do update set balance=wallets.balance+excluded.balance
-        """, user_id, delta)
-
-
-async def fetch_export(user_id: int):
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT
-                a.created_at::text AS created_at,
-                COALESCE(w.word,'') AS word,
-                COALESCE(w.translation,'') AS translation,
-                a.shown_en, a.shown_ru, a.truth, a.user_choice, a.employee_card, a.delta
-            FROM attempts a
-            LEFT JOIN words w ON w.id = a.word_id
-            WHERE a.user_id = $1
-            ORDER BY a.created_at
-        """, user_id)
-        return [dict(r) for r in rows]
-
+        await conn.execute(
+            """insert into results
+               (session_id, item_index, sentence_en, sentence_ru, truth, user_choice, employee_card, outcome, delta, balance_after)
+               values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)""",
+            session_id, item_index, sentence_en, sentence_ru, truth, user_choice, employee_card, outcome, delta, balance_after
+        )
