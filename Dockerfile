@@ -16,4 +16,7 @@ COPY . /app
 
 ENV PYTHONUNBUFFERED=1
 
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
 CMD ["python", "bot/app.py"]
