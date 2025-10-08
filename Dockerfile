@@ -1,13 +1,17 @@
-# Dockerfile
 FROM python:3.11-slim
+
+# 1) корневые сертификаты для SSL
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# зависимости отдельно — лучше кешируются
+# 2) зависимости
 COPY bot/requirements.txt /app/bot/requirements.txt
 RUN pip install --no-cache-dir -r /app/bot/requirements.txt
 
-# код
+# 3) код
 COPY . /app
 
 ENV PYTHONUNBUFFERED=1
