@@ -449,9 +449,10 @@ async def export_csv(cb: CallbackQuery):
 
     filename = f"results_{cb.from_user.id}.csv"
     await cb.message.answer_document(
-        BufferedInputFile(data=data, filename=filename),
+        BufferedInputFile(data, filename),
         caption="📄 Экспорт результатов (CSV)"
     )
+
 
 async def main():
     print("Bot is running…")
