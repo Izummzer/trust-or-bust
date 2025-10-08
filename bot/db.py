@@ -14,14 +14,7 @@ async def get_pool():
         # ТОЛЬКО для теста:
         # ssl_ctx = ssl._create_unverified_context()
 
-
-        _DB_POOL = await asyncpg.create_pool(
-            dsn,
-            min_size=1,
-            max_size=5,
-            ssl=ssl_ctx,
-            timeout=10,
-        )
+        _DB_POOL = await asyncpg.create_pool(dsn, ssl=ssl_ctx, min_size=1, max_size=5, timeout=10)
     return _DB_POOL
 
 async def ensure_user(tg_id: int):
