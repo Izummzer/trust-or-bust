@@ -1,8 +1,5 @@
 # bot/db.py
-import os
-import ssl
-import asyncpg
-import certifi
+import os, ssl, certifi, asyncpg
 from typing import List, Dict, Optional
 
 _DB_POOL = None
@@ -37,6 +34,15 @@ async def get_pool():
         )
     return _DB_POOL
 
+# async def get_pool():
+#     global _DB_POOL
+#     if _DB_POOL:
+#         return _DB_POOL
+#     dsn = os.environ["DATABASE_URL"]
+#     ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+#     _DB_POOL = await asyncpg.create_pool(dsn, min_size=1, max_size=5, ssl=ssl_ctx, statement_cache_size=0)
+#     return _DB_POOL
+
 # -------------------- USERS --------------------
 
 async def ensure_user(telegram_id: int) -> int:
@@ -48,6 +54,16 @@ async def ensure_user(telegram_id: int) -> int:
         """, telegram_id)
         row = await c.fetchrow("select id from users where telegram_id=$1", telegram_id)
         return row["id"]
+        
+# async def ensure_user(tg_id: int) -> int:
+#     pool = await get_pool()
+#     async with pool.acquire() as conn:
+#         return await conn.fetchval("""
+#             INSERT INTO users (tg_id)
+#             VALUES ($1)
+#             ON CONFLICT (tg_id) DO UPDATE SET tg_id = EXCLUDED.tg_id
+#             RETURNING id
+#         """, tg_id)
 
 # -------------------- SESSIONS / DECK --------------------
 
@@ -126,16 +142,41 @@ async def fetch_ok_example(word_id: int, exclude_en: Optional[List[str]] = None)
 
 # -------------------- ATTEMPTS / WALLET / EXPORT --------------------
 
-async def record_attempt(session_id:int, word_id:int, example_id:int|None,
-                        shown_en:str, shown_ru:str, truth:bool,
-                        user_choice:bool, employee_card:bool, delta:int):
+# async def record_attempt(session_id:int, word_id:int, example_id:int|None,
+#                         shown_en:str, shown_ru:str, truth:bool,
+#                         user_choice:bool, employee_card:bool, delta:int):
+#     pool = await get_pool()
+#     async with pool.acquire() as c:
+#         await c.execute("""
+#           insert into attempts(session_id, word_id, example_id,
+#                                shown_en, shown_ru, truth, user_choice, employee_card, delta, resolved)
+#           values($1,$2,$3,$4,$5,$6,$7,$8,$9,true)
+#         """, session_id, word_id, example_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
+
+async def record_attempt(
+    user_id: int,
+    word_id: int | None,
+    shown_en: str,
+    shown_ru: str,
+    truth: bool,
+    user_choice: bool,
+    employee_card: bool,
+    delta: int
+):
     pool = await get_pool()
-    async with pool.acquire() as c:
-        await c.execute("""
-          insert into attempts(session_id, word_id, example_id,
-                               shown_en, shown_ru, truth, user_choice, employee_card, delta, resolved)
-          values($1,$2,$3,$4,$5,$6,$7,$8,$9,true)
-        """, session_id, word_id, example_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
+    async with pool.acquire() as conn:
+        await conn.execute("""
+            INSERT INTO attempts (user_id, word_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        """, user_id, word_id, shown_en, shown_ru, truth, user_choice, employee_card, delta)
+
+
+async def fetch_word_id(word: str) -> int | None:
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT id FROM words WHERE lower(word)=lower($1) LIMIT 1", word)
+        return row["id"] if row else None
+
 
 async def add_balance(user_id:int, delta:int):
     pool = await get_pool()
@@ -145,38 +186,20 @@ async def add_balance(user_id:int, delta:int):
           on conflict (user_id) do update set balance=wallets.balance+excluded.balance
         """, user_id, delta)
 
-# async def fetch_export(session_id:int) -> List[Dict]:
-#     pool = await get_pool()
-#     async with pool.acquire() as c:
-#         rows = await c.fetch("""
-#           select a.created_at, w.word, w.translation, a.shown_en, a.shown_ru,
-#                  a.truth, a.user_choice, a.employee_card, a.delta
-#           from attempts a
-#           join words w on w.id=a.word_id
-#           where a.session_id=$1
-#           order by a.id
-#         """, session_id)
-#         return [dict(r) for r in rows]
 
 async def fetch_export(user_id: int):
     pool = await get_pool()
     async with pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT
-                a.created_at::text                             AS created_at,
-                COALESCE(w.word, '')                           AS word,
-                COALESCE(w.translation, '')                    AS translation,
-                a.shown_en,
-                a.shown_ru,
-                a.truth,
-                a.user_choice,
-                a.employee_card,
-                a.delta
+                a.created_at::text AS created_at,
+                COALESCE(w.word,'') AS word,
+                COALESCE(w.translation,'') AS translation,
+                a.shown_en, a.shown_ru, a.truth, a.user_choice, a.employee_card, a.delta
             FROM attempts a
             LEFT JOIN words w ON w.id = a.word_id
             WHERE a.user_id = $1
             ORDER BY a.created_at
         """, user_id)
-        # Вернём список dict для удобства
         return [dict(r) for r in rows]
 
