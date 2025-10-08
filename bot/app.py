@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.filters import CommandStart
+from db import ensure_user
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
@@ -21,13 +22,16 @@ def kb_main():
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
+
 @dp.message(CommandStart())
 async def on_start(m: Message):
+    uid = await ensure_user(m.from_user.id)
     await m.answer(
-        "👔 Trust or Bust — English Game\n\n"
-        "Это минимальный каркас бота. Кнопка WebApp пока ведёт на заглушку.",
+        "👔 Trust or Bust — English Game\n"
+        f"Ваш профиль создан (id={uid}).",
         reply_markup=kb_main()
     )
+
 
 @dp.callback_query(F.data == "start")
 async def on_start_day(cb: CallbackQuery):
