@@ -10,7 +10,10 @@ async def get_pool():
             raise RuntimeError("DATABASE_URL is not set")
 
         # Используем свежий корневой стор от certifi
-        ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+        # ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+        # ТОЛЬКО для теста:
+        ssl_ctx = ssl._create_unverified_context()
+
 
         _DB_POOL = await asyncpg.create_pool(
             dsn,
