@@ -1,6 +1,15 @@
-import os, asyncpg, ssl, certifi
+# bot/db.py
+import os, ssl, asyncpg, certifi
 
 _DB_POOL = None
+
+def make_ssl_ctx():
+    ca_path = os.getenv("SUPABASE_CA")
+    if ca_path and os.path.exists(ca_path):
+        # Жёстко используем CA Supabase
+        return ssl.create_default_context(cafile=ca_path)
+    # Фолбэк: certifi bundle
+    return ssl.create_default_context(cafile=certifi.where())
 
 async def get_pool():
     global _DB_POOL
@@ -8,14 +17,15 @@ async def get_pool():
         dsn = os.getenv("DATABASE_URL")
         if not dsn:
             raise RuntimeError("DATABASE_URL is not set")
-
-        # Используем свежий корневой стор от certifi
-        ssl_ctx = ssl.create_default_context(cafile=certifi.where())
-        # ТОЛЬКО для теста:
-        # ssl_ctx = ssl._create_unverified_context()
-
-        _DB_POOL = await asyncpg.create_pool(dsn, ssl=ssl_ctx, min_size=1, max_size=5, timeout=10)
+        _DB_POOL = await asyncpg.create_pool(
+            dsn,
+            ssl=make_ssl_ctx(),
+            min_size=1,
+            max_size=5,
+            timeout=10,
+        )
     return _DB_POOL
+
 
 async def ensure_user(tg_id: int):
     pool = await get_pool()
