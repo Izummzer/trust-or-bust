@@ -12,7 +12,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from db import (
     ensure_user, upsert_session, set_session_status,
     pick_words_for_level, save_deck, load_deck,
-    fetch_ok_example, record_attempt, add_balance, fetch_export
+    fetch_ok_example, fetch_word_id, record_attempt, add_balance, fetch_export
 )
 
 # ---------- CONFIG ----------
@@ -44,6 +44,7 @@ class UserState:
         self.evening_idx: int = 0
         self.morning_shown: Dict[int, str] = {}  # word_id -> en (что показали утром)
         self.pending: Dict = {}            # контекст активного спора
+        self.user_id: int = 0
 
 USERS: Dict[int, UserState] = {}
 
@@ -138,9 +139,13 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def on_start(m: Message):
-    USERS[m.from_user.id] = UserState()
-    # создаём/находим пользователя в БД сразу
-    uid = await ensure_user(m.from_user.id)
+    s = USERS.setdefault(m.from_user.id, UserState())
+    # получаем/создаём профиль в БД
+    try:
+        s.user_id = await ensure_user(m.from_user.id)
+    except Exception as e:
+        # не падаем, просто логика без БД
+        s.user_id = 0
 
     intro_text = (
         "👔 Welcome to *Trust or Bust: English Game*!\n\n"
