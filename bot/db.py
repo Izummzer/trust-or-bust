@@ -23,6 +23,7 @@ async def get_pool():
             min_size=1,
             max_size=5,
             timeout=10,
+            statement_cache_size=0   # <-- ключевая строка для PgBouncer (transaction)
         )
     return _DB_POOL
 
