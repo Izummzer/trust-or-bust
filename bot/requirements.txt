@@ -1,3 +1,4 @@
 aiogram>=3.4,<4.0
 python-dotenv>=1.0
 asyncpg>=0.29
+certifi>=2024.2.2
