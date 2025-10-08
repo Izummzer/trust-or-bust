@@ -1,4 +1,14 @@
+# core telegram framework
 aiogram>=3.4,<4.0
-python-dotenv>=1.0
-asyncpg>=0.29
-certifi>=2024.2.2
+
+# postgres driver
+asyncpg>=0.29.0
+
+# TLS root CAs (для verify-full/require; нужен и в скриптах)
+certifi>=2024.7.4
+
+# удобная работа с .env локально (Railway использует переменные окружения, но локально полезно)
+python-dotenv>=1.0.1
+
+# (опционально) быстрее цикл событий на linux — Railway сам на linux
+uvloop>=0.19.0 ; platform_system == "Linux"
