@@ -1,21 +1,22 @@
-FROM python:3.11
-# FROM python:3.11-slim
+FROM python:3.11-slim
 
-# Корневые сертификаты для валидации SSL
+# системные корневые сертификаты (на всякий случай)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Зависимости
+# зависимости
 COPY bot/requirements.txt /app/bot/requirements.txt
 RUN pip install --no-cache-dir -r /app/bot/requirements.txt
 
-# Код
+# код + наш CA Supabase
 COPY . /app
 
-# Явно укажем путь к системному CA-бандлу (иногда помогает)
+# укажем путь к нашему сертификату Supabase
+ENV SUPABASE_CA=/app/bot/certs/prod-ca-2021.crt
+# (оставим и системный бандл на всякий)
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ENV PYTHONUNBUFFERED=1
