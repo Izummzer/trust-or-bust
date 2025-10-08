@@ -1,4 +1,5 @@
-import os, asyncpg
+import os, asyncpg, ssl
+from urllib.parse import urlparse
 
 _DB_POOL = None
 
@@ -8,8 +9,20 @@ async def get_pool():
         dsn = os.getenv("DATABASE_URL")
         if not dsn:
             raise RuntimeError("DATABASE_URL is not set")
-        _DB_POOL = await asyncpg.create_pool(dsn, min_size=1, max_size=5)
+
+        parsed = urlparse(dsn)
+        print(f"[DB] host={parsed.hostname} port={parsed.port} db={parsed.path}")
+
+        ssl_ctx = ssl.create_default_context()
+        _DB_POOL = await asyncpg.create_pool(
+            dsn,
+            min_size=1,
+            max_size=5,
+            ssl=ssl_ctx,
+            timeout=10
+        )
     return _DB_POOL
+
 
 async def ensure_user(tg_id: int):
     pool = await get_pool()
