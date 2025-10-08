@@ -10,12 +10,12 @@ async def get_pool():
         if not dsn:
             raise RuntimeError("DATABASE_URL is not set")
 
-        ssl_ctx = ssl.create_default_context()  # для Supabase достаточно
+        ssl_ctx = ssl.create_default_context()  # этого достаточно, когда есть ca-certificates
         _DB_POOL = await asyncpg.create_pool(
             dsn,
             min_size=1,
             max_size=5,
-            ssl=ssl_ctx,   # hostname проверится по доменному имени из DSN
+            ssl=ssl_ctx,
             timeout=10
         )
     return _DB_POOL
