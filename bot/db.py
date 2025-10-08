@@ -27,13 +27,15 @@ async def get_pool():
         )
     return _DB_POOL
 
-
 async def ensure_user(tg_id: int):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("""
-            INSERT INTO users (tg_id) VALUES ($1)
-            ON CONFLICT (tg_id) DO NOTHING
+            INSERT INTO users (telegram_id) VALUES ($1)
+            ON CONFLICT (telegram_id) DO NOTHING
         """, tg_id)
-        row = await conn.fetchrow("SELECT id FROM users WHERE tg_id=$1", tg_id)
+        row = await conn.fetchrow(
+            "SELECT id FROM users WHERE telegram_id = $1",
+            tg_id
+        )
         return row["id"]
