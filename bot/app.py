@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message, CallbackQuery, FSInputFile, BufferedInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # --- DB only for user provision ---
@@ -18,6 +18,8 @@ try:
         start_session,
         finish_session,
         append_result,
+        get_user_stats,
+        export_results_csv,
     )
 except Exception:
     # fallback на случай локального запуска без БД
@@ -571,6 +573,7 @@ async def on_dispute(cb: CallbackQuery):
         highlighted = format_with_highlights(ex.text, ex.error_highlight)
 
     if action == "concede":
+        s.balance -= 50
         try:
             if s.session_id:
                 await append_result(
@@ -582,12 +585,12 @@ async def on_dispute(cb: CallbackQuery):
                 )
         except Exception:
             pass
-        s.balance -= 50
         s.results[idx]["result"] = "dispute_concede"
         s.results[idx]["delta"] = -50
         await cb.message.answer(f"{GREEN} «Ты прав». Вы платите сотруднику €50.")
     elif action == "check":
         if your_choice == truth:
+            s.balance += 50
             try:
                 if s.session_id:
                     await append_result(
@@ -599,7 +602,6 @@ async def on_dispute(cb: CallbackQuery):
                     )
             except Exception:
                 pass
-            s.balance += 50
             s.results[idx]["result"] = "dispute_check_win"
             s.results[idx]["delta"] = +50
             await cb.message.answer(f"""{CHECK} Проверка: вы оказались правы. Сотрудник пристыжен.
@@ -607,6 +609,7 @@ async def on_dispute(cb: CallbackQuery):
 
 “{highlighted}”""", parse_mode="Markdown")
         else:
+            s.balance -= 100
             try:
                 if s.session_id:
                     await append_result(
@@ -618,7 +621,6 @@ async def on_dispute(cb: CallbackQuery):
                     )
             except Exception:
                 pass
-            s.balance -= 100
             s.results[idx]["result"] = "dispute_check_lose"
             s.results[idx]["delta"] = -100
             await cb.message.answer(f"""{CROSS} Проверка: вы оказались неправы. Сотрудник ликует.
@@ -634,8 +636,44 @@ async def on_dispute(cb: CallbackQuery):
 
 @dp.callback_query(F.data == "export_csv")
 async def export_csv(cb: CallbackQuery):
+    # s = USERS.setdefault(cb.from_user.id, UserState())
+    # # сохраняем из оперативной памяти текущей сессии (как раньше)
+    # filename = f"results_{cb.from_user.id}.csv"
+    # with open(filename, "w", newline="", encoding="utf-8") as f:
+    #     w = csv.writer(f)
+    #     w.writerow(["sentence","truth","your_choice","employee_card","result","delta","balance_after_row"])
+    #     bal = 0
+    #     for r in s.results:
+    #         if isinstance(r.get("delta"), int):
+    #             bal += r["delta"]
+    #         w.writerow([
+    #             r.get("text",""),
+    #             r.get("truth",""),
+    #             r.get("your_choice",""),
+    #             r.get("employee_card",""),
+    #             r.get("result",""),
+    #             r.get("delta",""),
+    #             bal
+    #         ])
+    # await cb.message.answer_document(
+    #     FSInputFile(filename),
+    #     caption=f"{DOC} Экспорт готов."
+    # )
+    
     s = USERS.setdefault(cb.from_user.id, UserState())
-    # сохраняем из оперативной памяти текущей сессии (как раньше)
+    # 1) Пытаемся выгрузить из БД все результаты пользователя
+    try:
+        uid = await ensure_user(cb.from_user.id)
+        data = await export_results_csv(uid)  # bytes
+        if data and len(data) > 0:
+            buf = BufferedInputFile(data, filename=f"results_{cb.from_user.id}.csv")
+            await cb.message.answer_document(buf, caption=f"{DOC} Экспорт из БД готов.")
+            await cb.answer()
+            return
+    except Exception:
+        pass
+
+    # 2) Fallback — текущая сессионная in-memory выгрузка (как у тебя)
     filename = f"results_{cb.from_user.id}.csv"
     with open(filename, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
@@ -653,10 +691,35 @@ async def export_csv(cb: CallbackQuery):
                 r.get("delta",""),
                 bal
             ])
-    await cb.message.answer_document(
-        FSInputFile(filename),
-        caption=f"{DOC} Экспорт готов."
-    )
+    await cb.message.answer_document(FSInputFile(filename), caption=f"{DOC} Экспорт (локально) готов.")
+    await cb.answer()
+
+@dp.message(Command("stats"))
+async def on_stats(m: Message):
+    # если БД недоступна — дадим краткую локальную статистику из текущей сессии
+    local_total = local_correct = 0
+    for r in USERS.get(m.from_user.id, UserState()).results:
+        if r.get("result") in ("match", "dispute_check_win", "dispute_check_lose", "dispute_concede"):
+            local_total += 1
+            if r.get("truth") == r.get("your_choice"):
+                local_correct += 1
+    try:
+        uid = await ensure_user(m.from_user.id)
+        stats = await get_user_stats(uid)
+        await m.answer(
+            "📊 Статистика (по БД)\n"
+            f"Всего ответов: {stats['total']}\n"
+            f"Точность: {stats['accuracy']}%\n"
+            f"Суммарная дельта: €{stats['sum_delta']}\n"
+        )
+    except Exception:
+        acc = round((local_correct/local_total)*100,1) if local_total else 0.0
+        await m.answer(
+            "📊 Локальная статистика (за текущий день)\n"
+            f"Всего ответов: {local_total}\n"
+            f"Точность: {acc}%\n"
+        )
+
 
 # ---------- RUN ----------
 async def main():
