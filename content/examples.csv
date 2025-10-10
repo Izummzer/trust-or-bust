@@ -1,179 +1,178 @@
 word,kind,en,ru
-reliable,ok,Our team is reliable and delivers on time.,Наша команда надёжная и сдаёт работу вовремя.
-reliable,alt_ok,This is a reliable plan for the week.,Это надёжный план на неделю.
-reliable,bad,Our team works reliable on the report.,Наша команда работает «надёжный» над отчётом. (ошибка формы)
-efficient,ok,This tool is efficient for our project.,Этот инструмент эффективен для нашего проекта.
-efficient,alt_ok,An efficient process saves time.,Эффективный процесс экономит время.
-efficient,bad,This tool is efficiency for our project.,Этот инструмент «эффективность» для проекта. (ошибка части речи)
-flexible,ok,We need a flexible plan for the week.,Нам нужен гибкий план на неделю.
-flexible,alt_ok,Flexible rules help employees.,Гибкие правила помогают сотрудникам.
-flexible,bad,We need a flexibility plan.,Нам нужен «гибкость» план. (ошибка части речи)
-confident,ok,She is confident about the interview.,Она уверена насчёт собеседования.
-confident,alt_ok,I feel confident after practice.,Я чувствую уверенность после практики.
-confident,bad,She is confidence about the interview.,Она «уверенность» насчёт собеседования. (ошибка части речи)
-accurate,ok,We need accurate data for the report.,Нам нужны точные данные для отчёта.
-accurate,alt_ok,Accurate numbers are important.,Точные цифры важны.
-accurate,bad,We need accuracy data for the report.,Нам нужна «точность» данные. (ошибка части речи)
-productive,ok,A short break can make you more productive.,Короткий перерыв может сделать вас продуктивнее.
-productive,alt_ok,It was a productive day at work.,Это был продуктивный день на работе.
-productive,bad,A short break can make you productivity.,Короткий перерыв может сделать вас «продуктивность». (ошибка части речи)
-creative,ok,We need a creative idea for this ad.,Нам нужна креативная идея для этой рекламы.
-creative,alt_ok,She offered a creative solution.,Она предложила креативное решение.
-creative,bad,We need a creativity idea.,Нам нужна «креативность» идея. (ошибка части речи)
-busy,ok,I'm very busy this week.,Я очень занят на этой неделе.
-busy,alt_ok,He is too busy to talk.,Он слишком занят, чтобы говорить.
-busy,bad,I'm very business this week.,Я очень «бизнес» на этой неделе. (ошибка)
-hard,ok,This exam is really hard.,Этот экзамен действительно трудный.
-hard,alt_ok,It was a hard decision.,Это было трудное решение.
-hard,bad,This exam hardly.,Этот экзамен «едва». (ошибка наречия)
-small,ok,We live in a small town.,Мы живём в маленьком городе.
-small,alt_ok,He bought a small car.,Он купил маленькую машину.
-small,bad,We live in a smaller town than before.,Мы живём в более маленьком городе, чем раньше. (некорректное сравнение)
-big,ok,This is a big opportunity.,Это большая возможность.
-big,alt_ok,They work in a big office.,Они работают в большом офисе.
-big,bad,This is a bigger opportunity than before.,Это более большая возможность, чем раньше. (ошибка сравнения)
-simple,ok,Please give a simple answer.,Пожалуйста, дай простой ответ.
-simple,alt_ok,This is a simple task.,Это простая задача.
-simple,bad,Please answer simple.,Пожалуйста, отвечай «простой». (ошибка формы)
-clear,ok,The instructions are clear.,Инструкции ясны.
-clear,alt_ok,We need a clear timeline.,Нам нужен ясный таймлайн.
-clear,bad,Explain it more clear.,Объясни это более «ясный». (нужно clearly)
-fast,ok,This tool is fast and reliable.,Этот инструмент быстрый и надёжный.
-fast,alt_ok,The service is fast today.,Сервис сегодня быстрый.
-fast,bad,They work fastly on tasks.,Они работают «быстро» с -ly. (ошибка, fast — без -ly)
-slow,ok,The network is slow in the evening.,Сеть вечером медленная.
-slow,alt_ok,This laptop feels slow.,Этот ноутбук кажется медленным.
-slow,bad,They respond slowlyly.,Они отвечают «медленноly». (ошибка)
-modern,ok,We use modern tools.,Мы используем современные инструменты.
-modern,alt_ok,The office has a modern design.,В офисе современный дизайн.
-modern,bad,We use modernly tools.,Мы используем «современно» инструменты. (ошибка)
-secure,ok,This system is secure.,Эта система безопасна.
-secure,alt_ok,We need a secure connection.,Нам нужно безопасное соединение.
-secure,bad,We need to login in a secure.,Нужно войти в «безопасный». (ошибка структуры)
-friendly,ok,The interface is friendly.,Интерфейс дружелюбный.
-friendly,alt_ok,She has a friendly manner.,У неё дружелюбная манера.
-friendly,bad,They talk friendlyly.,Они разговаривают «дружелюбнол». (ошибка)
-helpful,ok,The tips are helpful.,Подсказки полезные.
-helpful,alt_ok,He was helpful during onboarding.,Он был полезен во время онбординга.
-helpful,bad,He helped helpful.,Он помог «полезный». (ошибка)
-important,ok,This is an important update.,Это важное обновление.
-important,alt_ok,Deadlines are important.,Сроки важны.
-important,bad,This is importantly.,Это «важно» как прилагательное. (ошибка)
-useful,ok,This guide is useful.,Это руководство полезное.
-useful,alt_ok,Useful tips save time.,Полезные советы экономят время.
-useful,bad,Use it useful.,Используй это «полезный». (ошибка)
-available,ok,The room is available now.,Комната сейчас доступна.
-available,alt_ok,Support is available 24/7.,Поддержка доступна 24/7.
-available,bad,The available of the room is now.,«Доступность» комнаты сейчас. (ошибка)
-visible,ok,The changes are visible.,Изменения видны.
-visible,alt_ok,Make the button visible.,Сделай кнопку видимой.
-visible,bad,We visible the changes.,Мы «видимый» изменения. (ошибка)
-common,ok,This is a common mistake.,Это распространённая ошибка.
-common,alt_ok,Common tools are listed here.,Распространённые инструменты перечислены здесь.
-common,bad,We use commonally.,Мы используем «общо». (ошибка)
-regular,ok,We have regular meetings.,У нас регулярные встречи.
-regular,alt_ok,Regular breaks help.,Регулярные перерывы помогают.
-regular,bad,We meet regular.,Мы встречаемся «регулярный». (ошибка)
-formal,ok,This is a formal letter.,Это формальное письмо.
-formal,alt_ok,The tone is formal.,Тон формальный.
-formal,bad,They speak formallyly.,Они говорят «формальноly». (ошибка)
-informal,ok,Use an informal style.,Используй неформальный стиль.
-informal,alt_ok,It was an informal chat.,Это был неформальный чат.
-informal,bad,We write informal in reports.,Мы пишем «неформальный» в отчётах. (ошибка)
-global,ok,We work with global teams.,Мы работаем с глобальными командами.
-global,alt_ok,Global trends matter.,Глобальные тренды важны.
-global,bad,We globalize in a global.,Мы «глобальный» в «глобальный». (ошибка)
-local,ok,Local rules apply.,Применяются локальные правила.
-local,alt_ok,Use local data only.,Используй только локальные данные.
-local,bad,We local the changes.,Мы «локальный» изменения. (ошибка)
-balanced,ok,We need a balanced view.,Нам нужен сбалансированный взгляд.
-balanced,alt_ok,Keep a balanced diet.,Соблюдай сбалансированную диету.
-balanced,bad,We balanceed the view.,Мы «balanceed» взгляд. (ошибка формы)
-stable,ok,The system is stable.,Система стабильна.
-stable,alt_ok,We want a stable release.,Нам нужен стабильный релиз.
-stable,bad,It works stablyly.,Это работает «стабильноly». (ошибка)
-scalable,ok,The platform is scalable.,Платформа масштабируема.
-scalable,alt_ok,A scalable solution helps growth.,Масштабируемое решение помогает росту.
-scalable,bad,We scaleable the app.,Мы «масштабируемый» приложение. (ошибка)
-robust,ok,The service is robust.,Сервис надёжен.
-robust,alt_ok,Robust design reduces risk.,Надёжный дизайн снижает риск.
-robust,bad,It runs robustlyly.,Это работает «надёжноly». (ошибка)
-redundant,ok,This step is redundant.,Этот шаг избыточен.
-redundant,alt_ok,Remove redundant details.,Уберите избыточные детали.
-redundant,bad,We redundant the step.,Мы «избыточный» шаг. (ошибка)
-responsive,ok,The site is responsive.,Сайт отзывчивый.
-responsive,alt_ok,Responsive support is key.,Отзывчивая поддержка — ключ.
-responsive,bad,They respond responsivelyly.,Они отвечают «отзывчивоly». (ошибка)
-lean,ok,We follow a lean process.,Мы следуем бережливому процессу.
-lean,alt_ok,Lean teams move fast.,Бережливые команды двигаются быстро.
-lean,bad,We work leanlyly.,Мы работаем «бережливоly». (ошибка)
-agile,ok,We use agile methods.,Мы используем agile-методы.
-agile,alt_ok,An agile team adapts.,Гибкая команда адаптируется.
-agile,bad,We agilelyly deliver.,Мы «гибколы» поставляем. (ошибка)
-solid,ok,This is a solid base.,Это прочная база.
-solid,alt_ok,The plan is solid.,План крепкий.
-solid,bad,It runs solidlyly.,Это работает «крепколы». (ошибка)
-consistent,ok,Keep a consistent style.,Соблюдай последовательный стиль.
-consistent,alt_ok,Consistent results build trust.,Последовательные результаты создают доверие.
-consistent,bad,We result consistent.,Мы «результат последовательный». (ошибка)
-proactive,ok,Be proactive with risks.,Будь проактивным с рисками.
-proactive,alt_ok,Proactive steps help.,Проактивные шаги помогают.
-proactive,bad,We act proactivelly.,Мы действуем «проактивнол». (ошибка)
-reactive,ok,Don’t be only reactive.,Не будь только реактивным.
-reactive,alt_ok,Reactive fixes are costly.,Реактивные фиксы дороги.
-reactive,bad,We work reactivelyly.,Мы работаем «реактивноly». (ошибка)
-transparent,ok,Keep the process transparent.,Делай процесс прозрачным.
-transparent,alt_ok,Transparent pricing matters.,Прозрачное ценообразование важно.
-transparent,bad,We price transparent.,Мы «цена прозрачный». (ошибка)
-clean,ok,Keep the data clean.,Держи данные чистыми.
-clean,alt_ok,The codebase is clean.,Кодовая база чистая.
-clean,bad,We code cleanlyly.,Мы пишем «чистолы». (ошибка)
-smart,ok,It’s a smart move.,Это умный ход.
-smart,alt_ok,Smart tools help.,Умные инструменты помогают.
-smart,bad,We move smartlyly.,Мы двигаемся «умноly». (ошибка)
-quick,ok,Give a quick update.,Дай быстрый апдейт.
-quick,alt_ok,Quick fixes are risky.,Быстрые фиксы рискованны.
-quick,bad,We update quicklyly.,Мы обновляем «быстролы». (ошибка)
-detailed,ok,Provide a detailed report.,Предоставь детальный отчёт.
-detailed,alt_ok,We need detailed steps.,Нам нужны детальные шаги.
-detailed,bad,We describe detailedlyly.,Мы описываем «детальноly». (ошибка)
-general,ok,Make a general summary.,Сделай общий итог.
-general,alt_ok,General feedback helps.,Общая обратная связь помогает.
-general,bad,We generalize general.,Мы «обобщаем общий». (ошибка)
-timely,ok,Please give timely feedback.,Пожалуйста, дай своевременную обратную связь.
-timely,alt_ok,Timely delivery is critical.,Своевременная поставка критична.
-timely,bad,We deliver timelilyly.,Мы «своевременноly». (ошибка)
-complex,ok,It’s a complex problem.,Это сложная проблема.
-complex,alt_ok,Complex systems need control.,Сложные системы требуют контроля.
-complex,bad,We complex the issue.,Мы «сложный» проблему. (ошибка)
-innovative,ok,We build innovative products.,Мы создаём инновационные продукты.
-innovative,alt_ok,Innovative teams grow fast.,Инновационные команды растут быстро.
-innovative,bad,We innovate innovative.,Мы «инновируем инновационный». (ошибка)
-strategic,ok,We take a strategic decision.,Мы принимаем стратегическое решение.
-strategic,alt_ok,Strategic goals define success.,Стратегические цели определяют успех.
-strategic,bad,We strategize strategiclyly.,Мы «стратегируем стратегическлы». (ошибка)
-tactical,ok,It’s a tactical move.,Это тактический ход.
-tactical,alt_ok,Tactical plans help daily work.,Тактические планы помогают в повседневной работе.
-tactical,bad,We act tacticlyly.,Мы действуем «тактичнолы». (ошибка)
-legal,ok,It’s a legal requirement.,Это законное требование.
-legal,alt_ok,Legal rules apply.,Применяются юридические правила.
-legal,bad,We legal the issue.,Мы «законный» проблему. (ошибка)
-ethical,ok,This is an ethical choice.,Это этичный выбор.
-ethical,alt_ok,Ethical behavior builds trust.,Этичное поведение укрепляет доверие.
-ethical,bad,We behave ethicallyly.,Мы ведём себя «этичноly». (ошибка)
-practical,ok,It’s a practical idea.,Это практичная идея.
-practical,alt_ok,Practical examples help learning.,Практические примеры помогают обучению.
-practical,bad,We act practicallyly.,Мы действуем «практичнолы». (ошибка)
-technical,ok,We fix a technical issue.,Мы исправляем техническую проблему.
-technical,alt_ok,Technical support is ready.,Техническая поддержка готова.
-technical,bad,We support technicallyly.,Мы поддерживаем «техническлы». (ошибка)
-operational,ok,We handle operational tasks.,Мы выполняем операционные задачи.
-operational,alt_ok,Operational costs are high.,Операционные расходы высоки.
-operational,bad,We operate operationallyly.,Мы работаем «операционнолы». (ошибка)
-manual,ok,It’s a manual process.,Это ручной процесс.
-manual,alt_ok,Manual steps take time.,Ручные шаги требуют времени.
-manual,bad,We process manuallyly.,Мы обрабатываем «ручнолы». (ошибка)
-automated,ok,We use automated scripts.,Мы используем автоматизированные скрипты.
-automated,alt_ok,An automated system saves effort.,Автоматизированная система экономит усилия.
-automated,bad,We automate automatedlyly.,Мы «автоматизируем автоматизированнолы». (ошибка)
-
+"reliable","ok","Our team is reliable and delivers on time.","Наша команда надёжная и сдаёт работу вовремя."
+"reliable","alt_ok","This is a reliable plan for the week.","Это надёжный план на неделю."
+"reliable","bad","Our team works reliable on the report.","Наша команда работает «надёжный» над отчётом. (ошибка формы)"
+"efficient","ok","This tool is efficient for our project.","Этот инструмент эффективен для нашего проекта."
+"efficient","alt_ok","An efficient process saves time.","Эффективный процесс экономит время."
+"efficient","bad","This tool is efficiency for our project.","Этот инструмент «эффективность» для проекта. (ошибка части речи)"
+"flexible","ok","We need a flexible plan for the week.","Нам нужен гибкий план на неделю."
+"flexible","alt_ok","Flexible rules help employees.","Гибкие правила помогают сотрудникам."
+"flexible","bad","We need a flexibility plan.","Нам нужен «гибкость» план. (ошибка части речи)"
+"confident","ok","She is confident about the interview.","Она уверена насчёт собеседования."
+"confident","alt_ok","I feel confident after practice.","Я чувствую уверенность после практики."
+"confident","bad","She is confidence about the interview.","Она «уверенность» насчёт собеседования. (ошибка части речи)"
+"accurate","ok","We need accurate data for the report.","Нам нужны точные данные для отчёта."
+"accurate","alt_ok","Accurate numbers are important.","Точные цифры важны."
+"accurate","bad","We need accuracy data for the report.","Нам нужна «точность» данные. (ошибка части речи)"
+"productive","ok","A short break can make you more productive.","Короткий перерыв может сделать вас продуктивнее."
+"productive","alt_ok","It was a productive day at work.","Это был продуктивный день на работе."
+"productive","bad","A short break can make you productivity.","Короткий перерыв может сделать вас «продуктивность». (ошибка части речи)"
+"creative","ok","We need a creative idea for this ad.","Нам нужна креативная идея для этой рекламы."
+"creative","alt_ok","She offered a creative solution.","Она предложила креативное решение."
+"creative","bad","We need a creativity idea.","Нам нужна «креативность» идея. (ошибка части речи)"
+"busy","ok","I'm very busy this week.","Я очень занят на этой неделе."
+"busy","alt_ok","He is too busy to talk.","Он слишком занят, чтобы говорить."
+"busy","bad","I'm very business this week.","Я очень «бизнес» на этой неделе. (ошибка)"
+"hard","ok","This exam is really hard.","Этот экзамен действительно трудный."
+"hard","alt_ok","It was a hard decision.","Это было трудное решение."
+"hard","bad","This exam hardly.","Этот экзамен «едва». (ошибка наречия)"
+"small","ok","We live in a small town.","Мы живём в маленьком городе."
+"small","alt_ok","He bought a small car.","Он купил маленькую машину."
+"small","bad","We live in a smaller town than before.","Мы живём в более маленьком городе, чем раньше. (некорректное сравнение)"
+"big","ok","This is a big opportunity.","Это большая возможность."
+"big","alt_ok","They work in a big office.","Они работают в большом офисе."
+"big","bad","This is a bigger opportunity than before.","Это более большая возможность, чем раньше. (ошибка сравнения)"
+"simple","ok","Please give a simple answer.","Пожалуйста, дай простой ответ."
+"simple","alt_ok","This is a simple task.","Это простая задача."
+"simple","bad","Please answer simple.","Пожалуйста, отвечай «простой». (ошибка формы)"
+"clear","ok","The instructions are clear.","Инструкции ясны."
+"clear","alt_ok","We need a clear timeline.","Нам нужен ясный таймлайн."
+"clear","bad","Explain it more clear.","Объясни это более «ясный». (нужно clearly)"
+"fast","ok","This tool is fast and reliable.","Этот инструмент быстрый и надёжный."
+"fast","alt_ok","The service is fast today.","Сервис сегодня быстрый."
+"fast","bad","They work fastly on tasks.","Они работают «быстро» с -ly. (ошибка, fast — без -ly)"
+"slow","ok","The network is slow in the evening.","Сеть вечером медленная."
+"slow","alt_ok","This laptop feels slow.","Этот ноутбук кажется медленным."
+"slow","bad","They respond slowlyly.","Они отвечают «медленноly». (ошибка)"
+"modern","ok","We use modern tools.","Мы используем современные инструменты."
+"modern","alt_ok","The office has a modern design.","В офисе современный дизайн."
+"modern","bad","We use modernly tools.","Мы используем «современно» инструменты. (ошибка)"
+"secure","ok","This system is secure.","Эта система безопасна."
+"secure","alt_ok","We need a secure connection.","Нам нужно безопасное соединение."
+"secure","bad","We need to login in a secure.","Нужно войти в «безопасный». (ошибка структуры)"
+"friendly","ok","The interface is friendly.","Интерфейс дружелюбный."
+"friendly","alt_ok","She has a friendly manner.","У неё дружелюбная манера."
+"friendly","bad","They talk friendlyly.","Они разговаривают «дружелюбнол». (ошибка)"
+"helpful","ok","The tips are helpful.","Подсказки полезные."
+"helpful","alt_ok","He was helpful during onboarding.","Он был полезен во время онбординга."
+"helpful","bad","He helped helpful.","Он помог «полезный». (ошибка)"
+"important","ok","This is an important update.","Это важное обновление."
+"important","alt_ok","Deadlines are important.","Сроки важны."
+"important","bad","This is importantly.","Это «важно» как прилагательное. (ошибка)"
+"useful","ok","This guide is useful.","Это руководство полезное."
+"useful","alt_ok","Useful tips save time.","Полезные советы экономят время."
+"useful","bad","Use it useful.","Используй это «полезный». (ошибка)"
+"available","ok","The room is available now.","Комната сейчас доступна."
+"available","alt_ok","Support is available 24/7.","Поддержка доступна 24/7."
+"available","bad","The available of the room is now.","«Доступность» комнаты сейчас. (ошибка)"
+"visible","ok","The changes are visible.","Изменения видны."
+"visible","alt_ok","Make the button visible.","Сделай кнопку видимой."
+"visible","bad","We visible the changes.","Мы «видимый» изменения. (ошибка)"
+"common","ok","This is a common mistake.","Это распространённая ошибка."
+"common","alt_ok","Common tools are listed here.","Распространённые инструменты перечислены здесь."
+"common","bad","We use commonally.","Мы используем «общо». (ошибка)"
+"regular","ok","We have regular meetings.","У нас регулярные встречи."
+"regular","alt_ok","Regular breaks help.","Регулярные перерывы помогают."
+"regular","bad","We meet regular.","Мы встречаемся «регулярный». (ошибка)"
+"formal","ok","This is a formal letter.","Это формальное письмо."
+"formal","alt_ok","The tone is formal.","Тон формальный."
+"formal","bad","They speak formallyly.","Они говорят «формальноly». (ошибка)"
+"informal","ok","Use an informal style.","Используй неформальный стиль."
+"informal","alt_ok","It was an informal chat.","Это был неформальный чат."
+"informal","bad","We write informal in reports.","Мы пишем «неформальный» в отчётах. (ошибка)"
+"global","ok","We work with global teams.","Мы работаем с глобальными командами."
+"global","alt_ok","Global trends matter.","Глобальные тренды важны."
+"global","bad","We globalize in a global.","Мы «глобальный» в «глобальный». (ошибка)"
+"local","ok","Local rules apply.","Применяются локальные правила."
+"local","alt_ok","Use local data only.","Используй только локальные данные."
+"local","bad","We local the changes.","Мы «локальный» изменения. (ошибка)"
+"balanced","ok","We need a balanced view.","Нам нужен сбалансированный взгляд."
+"balanced","alt_ok","Keep a balanced diet.","Соблюдай сбалансированную диету."
+"balanced","bad","We balanceed the view.","Мы «balanceed» взгляд. (ошибка формы)"
+"stable","ok","The system is stable.","Система стабильна."
+"stable","alt_ok","We want a stable release.","Нам нужен стабильный релиз."
+"stable","bad","It works stablyly.","Это работает «стабильноly». (ошибка)"
+"scalable","ok","The platform is scalable.","Платформа масштабируема."
+"scalable","alt_ok","A scalable solution helps growth.","Масштабируемое решение помогает росту."
+"scalable","bad","We scaleable the app.","Мы «масштабируемый» приложение. (ошибка)"
+"robust","ok","The service is robust.","Сервис надёжен."
+"robust","alt_ok","Robust design reduces risk.","Надёжный дизайн снижает риск."
+"robust","bad","It runs robustlyly.","Это работает «надёжноly». (ошибка)"
+"redundant","ok","This step is redundant.","Этот шаг избыточен."
+"redundant","alt_ok","Remove redundant details.","Уберите избыточные детали."
+"redundant","bad","We redundant the step.","Мы «избыточный» шаг. (ошибка)"
+"responsive","ok","The site is responsive.","Сайт отзывчивый."
+"responsive","alt_ok","Responsive support is key.","Отзывчивая поддержка — ключ."
+"responsive","bad","They respond responsivelyly.","Они отвечают «отзывчивоly». (ошибка)"
+"lean","ok","We follow a lean process.","Мы следуем бережливому процессу."
+"lean","alt_ok","Lean teams move fast.","Бережливые команды двигаются быстро."
+"lean","bad","We work leanlyly.","Мы работаем «бережливоly». (ошибка)"
+"agile","ok","We use agile methods.","Мы используем agile-методы."
+"agile","alt_ok","An agile team adapts.","Гибкая команда адаптируется."
+"agile","bad","We agilelyly deliver.","Мы «гибколы» поставляем. (ошибка)"
+"solid","ok","This is a solid base.","Это прочная база."
+"solid","alt_ok","The plan is solid.","План крепкий."
+"solid","bad","It runs solidlyly.","Это работает «крепколы». (ошибка)"
+"consistent","ok","Keep a consistent style.","Соблюдай последовательный стиль."
+"consistent","alt_ok","Consistent results build trust.","Последовательные результаты создают доверие."
+"consistent","bad","We result consistent.","Мы «результат последовательный». (ошибка)"
+"proactive","ok","Be proactive with risks.","Будь проактивным с рисками."
+"proactive","alt_ok","Proactive steps help.","Проактивные шаги помогают."
+"proactive","bad","We act proactivelly.","Мы действуем «проактивнол». (ошибка)"
+"reactive","ok","Don’t be only reactive.","Не будь только реактивным."
+"reactive","alt_ok","Reactive fixes are costly.","Реактивные фиксы дороги."
+"reactive","bad","We work reactivelyly.","Мы работаем «реактивноly». (ошибка)"
+"transparent","ok","Keep the process transparent.","Делай процесс прозрачным."
+"transparent","alt_ok","Transparent pricing matters.","Прозрачное ценообразование важно."
+"transparent","bad","We price transparent.","Мы «цена прозрачный». (ошибка)"
+"clean","ok","Keep the data clean.","Держи данные чистыми."
+"clean","alt_ok","The codebase is clean.","Кодовая база чистая."
+"clean","bad","We code cleanlyly.","Мы пишем «чистолы». (ошибка)"
+"smart","ok","It’s a smart move.","Это умный ход."
+"smart","alt_ok","Smart tools help.","Умные инструменты помогают."
+"smart","bad","We move smartlyly.","Мы двигаемся «умноly». (ошибка)"
+"quick","ok","Give a quick update.","Дай быстрый апдейт."
+"quick","alt_ok","Quick fixes are risky.","Быстрые фиксы рискованны."
+"quick","bad","We update quicklyly.","Мы обновляем «быстролы». (ошибка)"
+"detailed","ok","Provide a detailed report.","Предоставь детальный отчёт."
+"detailed","alt_ok","We need detailed steps.","Нам нужны детальные шаги."
+"detailed","bad","We describe detailedlyly.","Мы описываем «детальноly». (ошибка)"
+"general","ok","Make a general summary.","Сделай общий итог."
+"general","alt_ok","General feedback helps.","Общая обратная связь помогает."
+"general","bad","We generalize general.","Мы «обобщаем общий». (ошибка)"
+"timely","ok","Please give timely feedback.","Пожалуйста, дай своевременную обратную связь."
+"timely","alt_ok","Timely delivery is critical.","Своевременная поставка критична."
+"timely","bad","We deliver timelilyly.","Мы «своевременноly». (ошибка)"
+"complex","ok","It’s a complex problem.","Это сложная проблема."
+"complex","alt_ok","Complex systems need control.","Сложные системы требуют контроля."
+"complex","bad","We complex the issue.","Мы «сложный» проблему. (ошибка)"
+"innovative","ok","We build innovative products.","Мы создаём инновационные продукты."
+"innovative","alt_ok","Innovative teams grow fast.","Инновационные команды растут быстро."
+"innovative","bad","We innovate innovative.","Мы «инновируем инновационный». (ошибка)"
+"strategic","ok","We take a strategic decision.","Мы принимаем стратегическое решение."
+"strategic","alt_ok","Strategic goals define success.","Стратегические цели определяют успех."
+"strategic","bad","We strategize strategiclyly.","Мы «стратегируем стратегическлы». (ошибка)"
+"tactical","ok","It’s a tactical move.","Это тактический ход."
+"tactical","alt_ok","Tactical plans help daily work.","Тактические планы помогают в повседневной работе."
+"tactical","bad","We act tacticlyly.","Мы действуем «тактичнолы». (ошибка)"
+"legal","ok","It’s a legal requirement.","Это законное требование."
+"legal","alt_ok","Legal rules apply.","Применяются юридические правила."
+"legal","bad","We legal the issue.","Мы «законный» проблему. (ошибка)"
+"ethical","ok","This is an ethical choice.","Это этичный выбор."
+"ethical","alt_ok","Ethical behavior builds trust.","Этичное поведение укрепляет доверие."
+"ethical","bad","We behave ethicallyly.","Мы ведём себя «этичноly». (ошибка)"
+"practical","ok","It’s a practical idea.","Это практичная идея."
+"practical","alt_ok","Practical examples help learning.","Практические примеры помогают обучению."
+"practical","bad","We act practicallyly.","Мы действуем «практичнолы». (ошибка)"
+"technical","ok","We fix a technical issue.","Мы исправляем техническую проблему."
+"technical","alt_ok","Technical support is ready.","Техническая поддержка готова."
+"technical","bad","We support technicallyly.","Мы поддерживаем «техническлы». (ошибка)"
+"operational","ok","We handle operational tasks.","Мы выполняем операционные задачи."
+"operational","alt_ok","Operational costs are high.","Операционные расходы высоки."
+"operational","bad","We operate operationallyly.","Мы работаем «операционнолы». (ошибка)"
+"manual","ok","It’s a manual process.","Это ручной процесс."
+"manual","alt_ok","Manual steps take time.","Ручные шаги требуют времени."
+"manual","bad","We process manuallyly.","Мы обрабатываем «ручнолы». (ошибка)"
+"automated","ok","We use automated scripts.","Мы используем автоматизированные скрипты."
+"automated","alt_ok","An automated system saves effort.","Автоматизированная система экономит усилия."
+"automated","bad","We automate automatedlyly.","Мы «автоматизируем автоматизированнолы». (ошибка)"
