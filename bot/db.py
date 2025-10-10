@@ -48,16 +48,32 @@ async def get_pool() -> asyncpg.Pool:
 
 # --- USERS ---
 async def ensure_user(tg_id: int) -> int:
+    """
+    Возвращает users.id. Работает и с колонкой 'telegram_id', и с 'tg_id'.
+    Не требует уникального индекса: сначала SELECT, потом INSERT.
+    """
     pool = await get_pool()
     async with pool.acquire() as conn:
-        uid = await conn.fetchval(
-            """insert into users(tg_id)
-               values($1)
-               on conflict (tg_id) do update set tg_id=excluded.tg_id
-               returning id""",
-            tg_id
-        )
-        return uid
+        # Сначала пытаемся со схемой telegram_id
+        try:
+            uid = await conn.fetchval("select id from users where telegram_id=$1", tg_id)
+            if uid:
+                return uid
+            uid = await conn.fetchval(
+                "insert into users(telegram_id) values($1) returning id",
+                tg_id
+            )
+            return uid
+        except asyncpg.UndefinedColumnError:
+            # Фолбэк на старую схему tg_id
+            uid = await conn.fetchval("select id from users where tg_id=$1", tg_id)
+            if uid:
+                return uid
+            uid = await conn.fetchval(
+                "insert into users(tg_id) values($1) returning id",
+                tg_id
+            )
+            return uid
 
 # --- SESSIONS ---
 async def start_session(user_id: int, level: str) -> int:
