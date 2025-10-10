@@ -19,7 +19,7 @@ B1,adjectives,logical,логичный
 B1,adjectives,ambitious,амбициозный
 B1,adjectives,objective,объективный
 B1,adjectives,decisive,решительный
-B1,adjectives,approachable,открытый
+B1,adjectives,approachable,открытый для общения
 B1,adjectives,attentive,внимательный
 B1,adjectives,careful,осторожный
 B1,adjectives,competent,компетентный
@@ -40,24 +40,25 @@ B1,adjectives,precise,точный
 B1,adjectives,proactive,инициативный
 B1,adjectives,realistic,реалистичный
 B1,adjectives,receptive,восприимчивый
-B1,adjectives,reliable,надёжный
-B1,adjectives,resilient,устойчивый к стрессу
+B1,adjectives,resilient,стрессоустойчивый
 B1,adjectives,respectful,уважительный
 B1,adjectives,skilled,умелый
 B1,adjectives,supportive,поддерживающий
 B1,adjectives,tactful,тактичный
-B1,adjectives,thoughtful,заботливый
-B1,adjectives,trustworthy,доверенный
+B1,adjectives,thoughtful,внимательный к другим
+B1,adjectives,trustworthy,достойный доверия
 B1,adjectives,understanding,понимающий
-B1,adjectives,versatile,универсальный
 B1,adjectives,vigilant,бдительный
 B1,adjectives,visionary,дальновидный
-B1,adjectives,willing,готовый
+B1,adjectives,willing,готовый помочь
 B1,adjectives,wise,мудрый
 B1,adjectives,adaptable,адаптивный
 B1,adjectives,assertive,напористый
 B1,adjectives,balanced,уравновешенный
 B1,adjectives,cautious,осмотрительный
+B1,adjectives,collaborative,коллаборативный
+B1,adjectives,analytical,аналитический
+B1,adjectives,strategic,стратегический
 
 
 
