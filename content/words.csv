@@ -1,64 +1,65 @@
 level,pos,word,translation
-C1,nouns,abundance,изобилие
-C1,nouns,advancement,продвижение
-C1,nouns,adversary,противник
-C1,nouns,apparatus,аппарат
-C1,nouns,apprehension,опасение
-C1,nouns,articulation,чёткость выражения
-C1,nouns,assertion,утверждение
-C1,nouns,atmosphere,атмосфера
-C1,nouns,autonomy,автономия
-C1,nouns,benchmark,эталон
-C1,nouns,capability,способность
-C1,nouns,coherence,связность
-C1,nouns,cohort,группа
-C1,nouns,competency,компетенция
-C1,nouns,conjecture,догадка
-C1,nouns,conscience,совесть
-C1,nouns,consensus,консенсус
-C1,nouns,constituent,компонент
-C1,nouns,constraint,ограничение
-C1,nouns,convention,конвенция
-C1,nouns,correlation,корреляция
-C1,nouns,criterion,критерий
-C1,nouns,culmination,кульминация
-C1,nouns,debate,дебаты
-C1,nouns,deviation,отклонение
-C1,nouns,discrepancy,расхождение
-C1,nouns,disposition,расположение
-C1,nouns,distinction,отличие
-C1,nouns,diversity,разнообразие
-C1,nouns,elaboration,разработка
-C1,nouns,endeavor,попытка / усилие
-C1,nouns,entitlement,право
-C1,nouns,enumeration,перечисление
-C1,nouns,epitome,воплощение
-C1,nouns,expenditure,расход
-C1,nouns,facilitation,облегчение
-C1,nouns,fluctuation,колебание
-C1,nouns,foundation,основа
-C1,nouns,hierarchy,иерархия
-C1,nouns,implementation,внедрение
-C1,nouns,implication,вовлечение / последствие
-C1,nouns,incentive,стимул
-C1,nouns,incidence,частота
-C1,nouns,inception,начало
-C1,nouns,infrastructure,инфраструктура
-C1,nouns,integration,интеграция
-C1,nouns,interpretation,интерпретация
-C1,nouns,intuition,интуиция
-C1,nouns,legitimacy,законность / легитимность
-C1,nouns,modality,модальность
-C1,nouns,oversight,надзор
-C1,nouns,parameter,параметр
-C1,nouns,precedent,прецедент
-C1,nouns,prevalence,распространённость
-C1,nouns,repercussion,отклик / последствие
-C1,nouns,robustness,надёжность / устойчивость
-C1,nouns,strategist,стратег
-C1,nouns,validation,валидация
-C1,nouns,variance,вариация
-C1,nouns,virtue,добродетель
+C1,verbs,accommodate,вмещать / учитывать
+C1,verbs,acknowledge,признавать
+C1,verbs,administer,управлять / проводить
+C1,verbs,advocate,отстаивать / выступать за
+C1,verbs,allocate,распределять
+C1,verbs,anticipate,предвидеть
+C1,verbs,articulate,формулировать
+C1,verbs,assert,утверждать
+C1,verbs,attain,достигать
+C1,verbs,attribute,приписывать
+C1,verbs,commence,начинать
+C1,verbs,compensate,компенсировать
+C1,verbs,complement,дополнять
+C1,verbs,comply,соблюдать
+C1,verbs,concede,признавать (уступать)
+C1,verbs,conceive,задумать / представить
+C1,verbs,condemn,осуждать
+C1,verbs,confer,совещаться / присваивать
+C1,verbs,conform,соответствовать
+C1,verbs,contemplate,размышлять
+C1,verbs,convey,передавать
+C1,verbs,corroborate,подтверждать
+C1,verbs,delegate,делегировать
+C1,verbs,denote,обозначать
+C1,verbs,depict,изображать
+C1,verbs,derive,получать / происходить
+C1,verbs,detect,обнаруживать
+C1,verbs,devise,разрабатывать
+C1,verbs,discern,различать
+C1,verbs,disclose,раскрывать
+C1,verbs,disrupt,нарушать / срывать
+C1,verbs,distort,искажать
+C1,verbs,divert,отвлекать / перенаправлять
+C1,verbs,emphasize,подчёркивать
+C1,verbs,empower,уполномочивать / давать силы
+C1,verbs,entail,влечь за собой
+C1,verbs,enumerate,перечислять
+C1,verbs,eradicate,искоренять
+C1,verbs,facilitate,облегчать
+C1,verbs,fluctuate,колебаться
+C1,verbs,formulate,формулировать
+C1,verbs,halt,останавливать
+C1,verbs,illustrate,иллюстрировать
+C1,verbs,immerse,погружаться
+C1,verbs,impair,ухудшать
+C1,verbs,imply,подразумевать
+C1,verbs,infer,делать вывод
+C1,verbs,integrate,объединять / интегрировать
+C1,verbs,intervene,вмешиваться
+C1,verbs,manifest,проявлять / демонстрировать
+C1,verbs,mitigate,смягчать
+C1,verbs,outline,излагать кратко
+C1,verbs,perceive,воспринимать
+C1,verbs,persist,упорствовать
+C1,verbs,portray,изображать
+C1,verbs,reinforce,укреплять
+C1,verbs,reiterate,повторять / подтверждать
+C1,verbs,speculate,размышлять / строить догадки
+C1,verbs,substantiate,подтверждать фактами
+C1,verbs,terminate,прекращать
+
 
 
 
