@@ -856,71 +856,25 @@ async def dbwho(m: Message):
 
 @dp.message(Command("dbcount"))
 async def dbcount(m: Message):
-    """Показывает количество записей и 'последнее обновление' по ключевым таблицам (под твою схему)."""
+    """Показывает количество записей в ключевых таблицах (для проверки seed и логирования)."""
     try:
         pool = await get_pool()
         q = """
-        with
-        u as (
-          select count(*) as cnt, max(created_at) as updated
-          from users
-        ),
-        s as (
-          select count(*) as cnt, max(created_at) as updated
-          from sessions
-        ),
-        r as (
-          select count(*) as cnt, max(created_at) as updated
-          from results
-        ),
-        w as (
-          select
-            (select count(*) from words) as cnt,
-            case
-              when exists (
-                select 1 from information_schema.columns
-                where table_schema='public' and table_name='words' and column_name='created_at'
-              )
-              then (select max(created_at) from words)
-              else null
-            end as updated
-        ),
-        e as (
-          select
-            (select count(*) from examples) as cnt,
-            case
-              when exists (
-                select 1 from information_schema.columns
-                where table_schema='public' and table_name='examples' and column_name='created_at'
-              )
-              then (select max(created_at) from examples)
-              else null
-            end as updated
-        )
         select
-          (select cnt from u) as users_cnt,
-          (select updated from u) as users_updated,
-          (select cnt from s) as sessions_cnt,
-          (select updated from s) as sessions_updated,
-          (select cnt from r) as results_cnt,
-          (select updated from r) as results_updated,
-          (select cnt from w) as words_cnt,
-          (select updated from w) as words_updated,
-          (select cnt from e) as examples_cnt,
-          (select updated from e) as examples_updated
+          (select count(*) from users) as users,
+          (select count(*) from sessions) as sessions,
+          (select count(*) from results) as results,
+          (select count(*) from words) as words,
+          (select count(*) from examples) as examples
         """
         row = await pool.fetchrow(q)
-
-        def fmt(ts):
-            return ts.strftime("%Y-%m-%d %H:%M:%S") if ts else "—"
-
         txt = (
-            "📊 DB counts & last updates\n"
-            f"users:    {row['users_cnt']}   (updated: {fmt(row['users_updated'])})\n"
-            f"sessions: {row['sessions_cnt']}   (updated: {fmt(row['sessions_updated'])})\n"
-            f"results:  {row['results_cnt']}   (updated: {fmt(row['results_updated'])})\n"
-            f"words:    {row['words_cnt']}   (updated: {fmt(row['words_updated'])})\n"
-            f"examples: {row['examples_cnt']}   (updated: {fmt(row['examples_updated'])})"
+            f"📊 DB counts:\n"
+            f"users: {row['users']}\n"
+            f"sessions: {row['sessions']}\n"
+            f"results: {row['results']}\n"
+            f"words: {row['words']}\n"
+            f"examples: {row['examples']}"
         )
         await m.answer(txt)
     except Exception as e:
