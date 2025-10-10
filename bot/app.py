@@ -825,13 +825,22 @@ async def dbschema(m: Message):
         order by table_name, ordinal_position;
         """
         rows = await pool.fetch(q)
+        if not rows:
+            await m.answer("нет данных по таблицам users/sessions/results/examples/words")
+            return
+
         out = {}
         for r in rows:
-            out.setdefault(r["table_name"], []).append(f"{r['column_name']}:{r['data_type']}")
-        text = "\n\n".join([f"*{t}*\n- " + "\n- ".join(cols) for t, cols in out.items()])
-        if not text:
-            text = "нет данных"
-        await m.answer(text, parse_mode="Markdown")
+            out.setdefault(r["table_name"], []).append(f"{r['column_name']}: {r['data_type']}")
+
+        # без Markdown/HTML, чистый текст
+        text = "\n\n".join([f"{t}\n- " + "\n- ".join(cols) for t, cols in out.items()])
+
+        # телеграм ограничение ~4096 символов — шлём чанками
+        limit = 3500
+        for i in range(0, len(text), limit):
+            await m.answer(text[i:i+limit])
+
     except Exception as e:
         await m.answer(f"DB schema ERROR: {e!r}")
 
