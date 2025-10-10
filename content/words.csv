@@ -1,62 +1,63 @@
 level,pos,word,translation
-C2,nouns,adversity,невзгоды
-C2,nouns,allegiance,верность / преданность
-C2,nouns,ambiguity,неопределённость / двусмысленность
-C2,nouns,aptitude,способность / склонность
-C2,nouns,aspiration,стремление / амбиция
-C2,nouns,assertion,утверждение / заявление
-C2,nouns,benchmark,эталон / ориентир
-C2,nouns,catalyst,катализатор / стимул
-C2,nouns,cognition,познание / восприятие
-C2,nouns,compliance,соблюдение / подчинение
-C2,nouns,connotation,подтекст / скрытый смысл
-C2,nouns,constraint,ограничение
-C2,nouns,credibility,достоверность / авторитет
-C2,nouns,criterion,критерий
-C2,nouns,deficiency,недостаток / дефицит
-C2,nouns,discrepancy,несоответствие / расхождение
-C2,nouns,divergence,расхождение / отклонение
-C2,nouns,eloquence,красноречие
-C2,nouns,endowment,дар / пожертвование
-C2,nouns,entitlement,право / привилегия
-C2,nouns,epiphany,озарение / прозрение
-C2,nouns,fallacy,заблуждение
-C2,nouns,feasibility,осуществимость
-C2,nouns,fluctuation,колебание
-C2,nouns,gratitude,благодарность
-C2,nouns,hostility,враждебность
-C2,nouns,impartiality,беспристрастность
-C2,nouns,implication,подтекст / последствие
-C2,nouns,inception,начало / зарождение
-C2,nouns,ingenuity,изобретательность
-C2,nouns,integrity,честность / целостность
-C2,nouns,liability,ответственность / обязательство
-C2,nouns,longevity,долголетие
-C2,nouns,notion,понятие / представление
-C2,nouns,nuance,оттенок / нюанс
-C2,nouns,paradigm,парадигма
-C2,nouns,perseverance,настойчивость
-C2,nouns,plausibility,правдоподобие
-C2,nouns,precedent,прецедент
-C2,nouns,premise,предпосылка
-C2,nouns,proximity,близость
-C2,nouns,ramification,последствие / разветвление
-C2,nouns,reciprocity,взаимность
-C2,nouns,relevance,актуальность / значимость
-C2,nouns,reluctance,нежелание / сопротивление
-C2,nouns,resilience,устойчивость / жизнестойкость
-C2,nouns,sanction,санкция / разрешение
-C2,nouns,skepticism,скептицизм
-C2,nouns,solitude,одиночество
-C2,nouns,subtlety,тонкость / изящество
-C2,nouns,tenacity,упорство / настойчивость
-C2,nouns,tolerance,терпимость
-C2,nouns,transparency,прозрачность
-C2,nouns,unanimity,единодушие
-C2,nouns,versatility,гибкость / разносторонность
-C2,nouns,viability,жизнеспособность
-C2,nouns,vulnerability,уязвимость
-C2,nouns,zeal,рвение / усердие
+C2,verbs,abdicate,отречься / отказаться
+C2,verbs,acquiesce,уступать / соглашаться без протеста
+C2,verbs,alleviate,облегчать / смягчать
+C2,verbs,appease,умиротворять / успокаивать
+C2,verbs,ascertain,устанавливать / удостоверяться
+C2,verbs,bolster,поддерживать / укреплять
+C2,verbs,capitalize,воспользоваться / капитализировать
+C2,verbs,coerce,принуждать / заставлять
+C2,verbs,complement,дополнять / сочетаться
+C2,verbs,concede,признавать / уступать
+C2,verbs,confer,совещаться / присваивать
+C2,verbs,contemplate,созерцать / размышлять
+C2,verbs,corroborate,подтверждать / подкреплять
+C2,verbs,curtail,сокращать / урезать
+C2,verbs,debunk,разоблачать / развенчивать
+C2,verbs,defy,бросать вызов / противостоять
+C2,verbs,deliberate,обдумывать / совещаться
+C2,verbs,denote,обозначать / означать
+C2,verbs,disclose,раскрывать / сообщать
+C2,verbs,disseminate,распространять / сеять
+C2,verbs,elicit,вызывать / извлекать
+C2,verbs,embody,олицетворять / воплощать
+C2,verbs,emphasize,подчёркивать
+C2,verbs,encroach,посягать / вторгаться
+C2,verbs,endure,терпеть / выносить
+C2,verbs,entail,влечь за собой / предполагать
+C2,verbs,enumerate,перечислять
+C2,verbs,exacerbate,обострять / усиливать
+C2,verbs,exemplify,иллюстрировать / служить примером
+C2,verbs,expedite,ускорять / способствовать
+C2,verbs,fluctuate,колебаться / меняться
+C2,verbs,foresee,предвидеть
+C2,verbs,hamper,препятствовать / мешать
+C2,verbs,imply,подразумевать
+C2,verbs,incite,побуждать / подстрекать
+C2,verbs,inhibit,подавлять / сдерживать
+C2,verbs,mediate,посредничать / урегулировать
+C2,verbs,mitigate,смягчать / уменьшать
+C2,verbs,perceive,воспринимать / понимать
+C2,verbs,perpetuate,увековечивать / сохранять
+C2,verbs,ponder,обдумывать / размышлять
+C2,verbs,postulate,предполагать / утверждать
+C2,verbs,presume,предполагать / допускать
+C2,verbs,reiterate,повторять / утверждать вновь
+C2,verbs,renounce,отрекаться / отказываться
+C2,verbs,repudiate,отвергать / отрицать
+C2,verbs,retain,сохранять / удерживать
+C2,verbs,scrutinize,внимательно изучать
+C2,verbs,solidify,укреплять / консолидировать
+C2,verbs,stipulate,оговаривать / предусматривать
+C2,verbs,substantiate,доказывать / обосновывать
+C2,verbs,succumb,поддаваться / уступать
+C2,verbs,supersede,заменять / вытеснять
+C2,verbs,underscore,подчеркивать / выделять
+C2,verbs,undermine,подрывать
+C2,verbs,uphold,поддерживать / защищать
+C2,verbs,utilize,использовать / применять
+C2,verbs,withstand,выдерживать / противостоять
+C2,verbs,yield,приносить / уступать
 
 
 
