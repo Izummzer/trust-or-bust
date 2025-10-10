@@ -794,6 +794,49 @@ async def on_stats(m: Message):
             f"Баланс (локально): €{s.balance}\n"
         )
 
+# Отладка
+
+@dp.message(Command("dbping"))
+async def dbping(m: Message):
+    try:
+        pool = await get_pool()
+        row = await pool.fetchval("select 1")
+        await m.answer(f"DB ping: {row}")
+    except Exception as e:
+        await m.answer(f"DB ping ERROR: {e!r}")
+
+@dp.message(Command("dbschema"))
+async def dbschema(m: Message):
+    try:
+        pool = await get_pool()
+        q = """
+        select table_name, column_name, data_type
+        from information_schema.columns
+        where table_schema='public' and table_name in ('users','sessions','results','examples','words')
+        order by table_name, ordinal_position;
+        """
+        rows = await pool.fetch(q)
+        out = {}
+        for r in rows:
+            out.setdefault(r["table_name"], []).append(f"{r['column_name']}:{r['data_type']}")
+        text = "\n\n".join([f"*{t}*\n- " + "\n- ".join(cols) for t, cols in out.items()])
+        if not text:
+            text = "нет данных"
+        await m.answer(text, parse_mode="Markdown")
+    except Exception as e:
+        await m.answer(f"DB schema ERROR: {e!r}")
+
+@dp.message(Command("dbwho"))
+async def dbwho(m: Message):
+    # кто мы такие для Postgres (проверка роли/хоста)
+    try:
+        pool = await get_pool()
+        row = await pool.fetchrow("select current_user as u, inet_server_addr()::text as host, inet_server_port() as port")
+        await m.answer(f"user={row['u']}, host={row['host']}:{row['port']}")
+    except Exception as e:
+        await m.answer(f"DB who ERROR: {e!r}")
+
+
 
 # ---------- RUN ----------
 async def main():
