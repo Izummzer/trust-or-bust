@@ -3,6 +3,7 @@
 # экспорт CSV. DB используется только для ensure_user.
 
 import os, csv, random, re
+from io import StringIO
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
@@ -11,15 +12,13 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery, FSInputFile, BufferedInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# --- DB only for user provision ---
 try:
     from db import (
         ensure_user,
         start_session,
         finish_session,
         append_result,
-        get_user_stats,
-        export_results_csv,
+        get_pool,
     )
 except Exception:
     # fallback на случай локального запуска без БД
@@ -27,6 +26,8 @@ except Exception:
     async def start_session(user_id: int, level: str) -> int: return 0
     async def finish_session(session_id: int, final_balance: int): pass
     async def append_result(*args, **kwargs): pass
+    async def get_pool():  # чтобы код не падал, если где-то вызовется
+        raise RuntimeError("DB pool is unavailable in fallback mode")
 
 
 # ---------- CONFIG ----------
@@ -73,17 +74,19 @@ class EveningItem:
 
 @dataclass
 class UserState:
-    stage: str = "idle"    # idle | process | morning | evening | done
+    stage: str = "idle"
     level: str = "A2"
     pos: str = "adjectives"
     balance: int = 0
     session_id: int = 0
-    deck: List[WordCard] = field(default_factory=list)       # 5 слов
+    deck: List[WordCard] = field(default_factory=list)
+    word2id: Dict[str, int] = field(default_factory=dict)
     morning_idx: int = 0
     evening_idx: int = 0
     evening_queue: List[EveningItem] = field(default_factory=list)
     results: List[Dict] = field(default_factory=list)
-    study_bank: Dict[str, List[tuple]] = field(default_factory=dict)  # {word: [(en,ru), ...]}
+    study_bank: Dict[str, List[tuple]] = field(default_factory=dict)
+
 
 USERS: Dict[int, UserState] = {}
 
@@ -262,23 +265,77 @@ def make_wrong_swapped_from_bank(base_word: str, deck_words: List[str], study_ba
         explanation="Ключевое слово подменено на другое изучаемое слово."
     )
 
-def build_evening_queue(deck: List[WordCard], study_bank: Dict[str, List[tuple]]) -> List[EveningItem]:
-    deck_words = [c.word for c in deck]
-    queue: List[EveningItem] = []
-    for card in deck:
-        # новый корректный пример (не утренний), иначе — утренний
-        ok_pool = [e for e in ALT_OK.get(card.word, []) if (card.word in e.uses)]
-        base_ok = random.choice(ok_pool) if ok_pool else STAGE1_EXAMPLES.get(card.word) or Example(
-            f"This is {card.word}.", f"Это {card.word}.", [card.word], True
-        )
-        bad_ex = make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
-        candidates: List[Example] = [base_ok]
-        if bad_ex:
-            candidates.append(bad_ex)
-        ex = random.choice(candidates)
-        queue.append(EveningItem(example=ex, employee_card=True))
-    random.shuffle(queue)
-    return queue
+async def build_evening_queue(deck: List[WordCard], study_bank: Dict[str, List[tuple]], word2id: Dict[str, int]) -> List[EveningItem]:
+     deck_words = [c.word for c in deck]
+     queue: List[EveningItem] = []
+     for card in deck:
+         ok_pool, bad_pool = await db_pick_evening_pools(word2id[card.word])
+         base_ok = random.choice(ok_pool) if ok_pool else Example(f"This is {card.word}.", f"Это {card.word}.", [card.word], True)
+         bad_ex = random.choice(bad_pool) if bad_pool else make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
+         candidates = [base_ok] + ([bad_ex] if bad_ex else [])
+         ex = random.choice(candidates)
+         
+         queue.append(EveningItem(example=ex, employee_card=True))
+     random.shuffle(queue)
+     return queue
+
+
+# --- DB helpers for content (NEW) ---
+
+async def db_pick_deck(level: str, pos: str, k: int = 5):
+    """Выбрать k слов для колоды по level+pos."""
+    pool = await get_pool()
+    rows = await pool.fetch(
+        """
+        select id, word, translation
+        from words
+        where level = $1 and pos = $2
+        order by random()
+        limit $3
+        """,
+        level, pos, k
+    )
+    # Вернём WordCard[] и map word->id
+    deck = [WordCard(r["word"], r["translation"]) for r in rows]
+    word2id = {r["word"]: r["id"] for r in rows}
+    return deck, word2id
+
+async def db_pick_morning_example(word_id: int):
+    """Корректный пример для утреннего этапа."""
+    pool = await get_pool()
+    row = await pool.fetchrow(
+        """
+        select en, ru
+        from examples
+        where word_id = $1 and kind in ('ok','alt_ok')
+        order by (case when kind='ok' then 0 else 1 end), random()
+        limit 1
+        """,
+        word_id
+    )
+    return (row["en"], row["ru"]) if row else None
+
+async def db_pick_evening_pools(word_id: int):
+    """
+    Вернём:
+      ok_pool: список корректных Example,
+      bad_pool: список ошибочных Example
+    Если bad_pool пуст — дальше используем твою подмену (swap_word_everywhere).
+    """
+    pool = await get_pool()
+    ok_rows = await pool.fetch(
+        """select en, ru from examples
+           where word_id=$1 and kind in ('ok','alt_ok')""",
+        word_id
+    )
+    bad_rows = await pool.fetch(
+        """select en, ru from examples
+           where word_id=$1 and kind='bad'""",
+        word_id
+    )
+    ok_pool = [Example(r["en"], r["ru"], uses=[], is_correct=True) for r in ok_rows]
+    bad_pool = [Example(r["en"], r["ru"], uses=[], is_correct=False) for r in bad_rows]
+    return ok_pool, bad_pool
 
 # ---------- BOT ----------
 bot = Bot(BOT_TOKEN)
@@ -336,7 +393,7 @@ async def send_next_morning(msg: Message, s: UserState):
     if s.morning_idx >= len(s.deck):
         s.stage = "evening"
         s.evening_idx = 0
-        s.evening_queue = build_evening_queue(s.deck, s.study_bank)
+        s.evening_queue = await build_evening_queue(s.deck, s.study_bank, s.word2id)
         await msg.answer("🔎 Этап 2: Проверим предложения сотрудников")
         await send_next_evening(msg, s)
         return
@@ -345,7 +402,11 @@ async def send_next_morning(msg: Message, s: UserState):
     N = len(s.deck)
     card = s.deck[s.morning_idx]
 
-    sample_ok = STAGE1_EXAMPLES.get(card.word)
+    pair = await db_pick_morning_example(s.word2id[card.word])
+    if pair:
+        sample_ok = Example(pair[0], pair[1], [card.word], True)
+    else:
+        sample_ok = STAGE1_EXAMPLES.get(card.word)
     if not sample_ok:
         alt = ALT_OK.get(card.word, [])
         sample_ok = alt[0] if alt else Example(
@@ -386,9 +447,10 @@ async def start_day(cb: CallbackQuery):
     s.results.clear()
     s.morning_idx = 0
     s.evening_idx = 0
-    bank = WORD_BANK.get(s.level) or B1_ADJ
-    k = min(5, len(bank)) or 1
-    s.deck = random.sample(bank, k=k)
+    # bank = WORD_BANK.get(s.level) or B1_ADJ
+    # k = min(5, len(bank)) or 1
+    # s.deck = random.sample(bank, k=k)
+    s.deck, s.word2id = await db_pick_deck(s.level, s.pos, k=5)
     s.study_bank = collect_study_bank(s.deck)
     # старт новой сессии в БД
     try:
@@ -636,44 +698,40 @@ async def on_dispute(cb: CallbackQuery):
 
 @dp.callback_query(F.data == "export_csv")
 async def export_csv(cb: CallbackQuery):
-    # s = USERS.setdefault(cb.from_user.id, UserState())
-    # # сохраняем из оперативной памяти текущей сессии (как раньше)
-    # filename = f"results_{cb.from_user.id}.csv"
-    # with open(filename, "w", newline="", encoding="utf-8") as f:
-    #     w = csv.writer(f)
-    #     w.writerow(["sentence","truth","your_choice","employee_card","result","delta","balance_after_row"])
-    #     bal = 0
-    #     for r in s.results:
-    #         if isinstance(r.get("delta"), int):
-    #             bal += r["delta"]
-    #         w.writerow([
-    #             r.get("text",""),
-    #             r.get("truth",""),
-    #             r.get("your_choice",""),
-    #             r.get("employee_card",""),
-    #             r.get("result",""),
-    #             r.get("delta",""),
-    #             bal
-    #         ])
-    # await cb.message.answer_document(
-    #     FSInputFile(filename),
-    #     caption=f"{DOC} Экспорт готов."
-    # )
-    
     s = USERS.setdefault(cb.from_user.id, UserState())
-    # 1) Пытаемся выгрузить из БД все результаты пользователя
+
+    # 1) Пытаемся выгрузить из БД всю историю пользователя
     try:
         uid = await ensure_user(cb.from_user.id)
-        data = await export_results_csv(uid)  # bytes
-        if data and len(data) > 0:
-            buf = BufferedInputFile(data, filename=f"results_{cb.from_user.id}.csv")
-            await cb.message.answer_document(buf, caption=f"{DOC} Экспорт из БД готов.")
-            await cb.answer()
-            return
+        pool = await get_pool()
+        rows = await pool.fetch(
+            """
+            select
+              r.id, s.user_id, s.level, r.item_index,
+              r.sentence_en, r.sentence_ru,
+              r.truth, r.user_choice, r.employee_card, r.outcome,
+              r.delta, r.balance_after, r.created_at
+            from results r
+            join sessions s on s.id = r.session_id
+            where s.user_id = $1
+            order by r.created_at
+            """,
+            uid
+        )
+        header = ["id","user_id","level","item_index","sentence_en","sentence_ru",
+                  "truth","user_choice","employee_card","outcome","delta","balance_after","created_at"]
+        sio = StringIO(); w = csv.writer(sio); w.writerow(header)
+        for r in rows:
+            w.writerow([r[h] for h in header])
+        data = sio.getvalue().encode("utf-8")
+        buf = BufferedInputFile(data, filename=f"results_{cb.from_user.id}.csv")
+        await cb.message.answer_document(buf, caption="📄 Экспорт из БД готов.")
+        await cb.answer()
+        return
     except Exception:
         pass
 
-    # 2) Fallback — текущая сессионная in-memory выгрузка (как у тебя)
+    # 2) Fallback — твоя текущая выгрузка из оперативной памяти
     filename = f"results_{cb.from_user.id}.csv"
     with open(filename, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
@@ -691,33 +749,49 @@ async def export_csv(cb: CallbackQuery):
                 r.get("delta",""),
                 bal
             ])
-    await cb.message.answer_document(FSInputFile(filename), caption=f"{DOC} Экспорт (локально) готов.")
+    await cb.message.answer_document(FSInputFile(filename), caption="📄 Экспорт (локально) готов.")
     await cb.answer()
+
 
 @dp.message(Command("stats"))
 async def on_stats(m: Message):
-    # если БД недоступна — дадим краткую локальную статистику из текущей сессии
-    local_total = local_correct = 0
-    for r in USERS.get(m.from_user.id, UserState()).results:
-        if r.get("result") in ("match", "dispute_check_win", "dispute_check_lose", "dispute_concede"):
-            local_total += 1
-            if r.get("truth") == r.get("your_choice"):
-                local_correct += 1
+    s = USERS.get(m.from_user.id, UserState())
+
+    # локальный fallback (на случай офлайна БД)
+    local_total = sum(1 for r in s.results if r.get("result") in ("match","dispute_concede","dispute_check_win","dispute_check_lose"))
+    local_correct = sum(1 for r in s.results if r.get("result") in ("match","dispute_concede","dispute_check_win","dispute_check_lose") and r.get("truth")==r.get("your_choice"))
+    local_acc = round((local_correct/local_total)*100,1) if local_total else 0.0
+
     try:
         uid = await ensure_user(m.from_user.id)
-        stats = await get_user_stats(uid)
+        pool = await get_pool()
+        row = await pool.fetchrow(
+            """
+            select
+              count(*) as total,
+              count(*) filter (where r.truth = r.user_choice) as correct,
+              coalesce(sum(coalesce(r.delta,0)),0) as sum_delta
+            from results r
+            join sessions s on s.id = r.session_id
+            where s.user_id = $1
+            """,
+            uid
+        )
+        total = row["total"] or 0
+        correct = row["correct"] or 0
+        acc = round((correct/total)*100,1) if total else 0.0
         await m.answer(
             "📊 Статистика (по БД)\n"
-            f"Всего ответов: {stats['total']}\n"
-            f"Точность: {stats['accuracy']}%\n"
-            f"Суммарная дельта: €{stats['sum_delta']}\n"
+            f"Всего ответов: {total}\n"
+            f"Точность: {acc}%\n"
+            f"Суммарная дельта: €{row['sum_delta']}\n"
         )
     except Exception:
-        acc = round((local_correct/local_total)*100,1) if local_total else 0.0
         await m.answer(
-            "📊 Локальная статистика (за текущий день)\n"
+            "📊 Локальная статистика (за текущую сессию)\n"
             f"Всего ответов: {local_total}\n"
-            f"Точность: {acc}%\n"
+            f"Точность: {local_acc}%\n"
+            f"Баланс (локально): €{s.balance}\n"
         )
 
 
