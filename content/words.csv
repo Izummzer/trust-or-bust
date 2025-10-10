@@ -1,64 +1,63 @@
 level,pos,word,translation
-C1,verbs,accommodate,вмещать / учитывать
-C1,verbs,acknowledge,признавать
-C1,verbs,administer,управлять / проводить
-C1,verbs,advocate,отстаивать / выступать за
-C1,verbs,allocate,распределять
-C1,verbs,anticipate,предвидеть
-C1,verbs,articulate,формулировать
-C1,verbs,assert,утверждать
-C1,verbs,attain,достигать
-C1,verbs,attribute,приписывать
-C1,verbs,commence,начинать
-C1,verbs,compensate,компенсировать
-C1,verbs,complement,дополнять
-C1,verbs,comply,соблюдать
-C1,verbs,concede,признавать (уступать)
-C1,verbs,conceive,задумать / представить
-C1,verbs,condemn,осуждать
-C1,verbs,confer,совещаться / присваивать
-C1,verbs,conform,соответствовать
-C1,verbs,contemplate,размышлять
-C1,verbs,convey,передавать
-C1,verbs,corroborate,подтверждать
-C1,verbs,delegate,делегировать
-C1,verbs,denote,обозначать
-C1,verbs,depict,изображать
-C1,verbs,derive,получать / происходить
-C1,verbs,detect,обнаруживать
-C1,verbs,devise,разрабатывать
-C1,verbs,discern,различать
-C1,verbs,disclose,раскрывать
-C1,verbs,disrupt,нарушать / срывать
-C1,verbs,distort,искажать
-C1,verbs,divert,отвлекать / перенаправлять
-C1,verbs,emphasize,подчёркивать
-C1,verbs,empower,уполномочивать / давать силы
-C1,verbs,entail,влечь за собой
-C1,verbs,enumerate,перечислять
-C1,verbs,eradicate,искоренять
-C1,verbs,facilitate,облегчать
-C1,verbs,fluctuate,колебаться
-C1,verbs,formulate,формулировать
-C1,verbs,halt,останавливать
-C1,verbs,illustrate,иллюстрировать
-C1,verbs,immerse,погружаться
-C1,verbs,impair,ухудшать
-C1,verbs,imply,подразумевать
-C1,verbs,infer,делать вывод
-C1,verbs,integrate,объединять / интегрировать
-C1,verbs,intervene,вмешиваться
-C1,verbs,manifest,проявлять / демонстрировать
-C1,verbs,mitigate,смягчать
-C1,verbs,outline,излагать кратко
-C1,verbs,perceive,воспринимать
-C1,verbs,persist,упорствовать
-C1,verbs,portray,изображать
-C1,verbs,reinforce,укреплять
-C1,verbs,reiterate,повторять / подтверждать
-C1,verbs,speculate,размышлять / строить догадки
-C1,verbs,substantiate,подтверждать фактами
-C1,verbs,terminate,прекращать
+C1,adjectives,ambiguous,двусмысленный
+C1,adjectives,ample,обильный / достаточный
+C1,adjectives,arbitrary,произвольный
+C1,adjectives,assertive,уверенный в себе
+C1,adjectives,authentic,подлинный
+C1,adjectives,benevolent,доброжелательный
+C1,adjectives,coherent,связный / последовательный
+C1,adjectives,collaborative,совместный
+C1,adjectives,compelling,убедительный
+C1,adjectives,comprehensive,всесторонний
+C1,adjectives,conducive,способствующий
+C1,adjectives,conscientious,добросовестный
+C1,adjectives,conspicuous,заметный / бросающийся в глаза
+C1,adjectives,contingent,зависящий от обстоятельств
+C1,adjectives,credible,достоверный / заслуживающий доверия
+C1,adjectives,cumulative,накопительный
+C1,adjectives,credible,достоверный
+C1,adjectives,decisive,решающий / решительный
+C1,adjectives,deliberate,обдуманный / умышленный
+C1,adjectives,distinct,отличительный / ясный
+C1,adjectives,eloquent,красноречивый
+C1,adjectives,feasible,осуществимый
+C1,adjectives,formidable,грозный / внушительный
+C1,adjectives,imminent,неизбежный / предстоящий
+C1,adjectives,impartial,беспристрастный
+C1,adjectives,inherent,присущий / неотъемлемый
+C1,adjectives,innovative,инновационный
+C1,adjectives,integral,неотъемлемый
+C1,adjectives,lucrative,прибыльный
+C1,adjectives,meticulous,дотошный
+C1,adjectives,notable,примечательный
+C1,adjectives,notorious,пресловутый / пользующийся дурной славой
+C1,adjectives,objective,объективный
+C1,adjectives,obsolete,устаревший
+C1,adjectives,pervasive,вездесущий / распространяющийся
+C1,adjectives,plausible,правдоподобный
+C1,adjectives,preliminary,предварительный
+C1,adjectives,prevalent,распространённый
+C1,adjectives,profound,глубокий / основательный
+C1,adjectives,prospective,перспективный
+C1,adjectives,rational,рациональный
+C1,adjectives,resilient,устойчивый / жизнестойкий
+C1,adjectives,resolute,решительный
+C1,adjectives,skeptical,скептический
+C1,adjectives,solitary,одинокий / уединённый
+C1,adjectives,spontaneous,спонтанный
+C1,adjectives,stringent,строгий / жёсткий
+C1,adjectives,subtle,тонкий / неуловимый
+C1,adjectives,sufficient,достаточный
+C1,adjectives,sustainable,устойчивый
+C1,adjectives,tedious,утомительный / скучный
+C1,adjectives,transparent,прозрачный
+C1,adjectives,unprecedented,беспрецедентный
+C1,adjectives,versatile,универсальный / разносторонний
+C1,adjectives,vigorous,энергичный
+C1,adjectives,vulnerable,уязвимый
+C1,adjectives,wholesome,полезный / здоровый
+C1,adjectives,worthwhile,стоящий
+
 
 
 
