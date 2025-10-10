@@ -266,18 +266,36 @@ def make_wrong_swapped_from_bank(base_word: str, deck_words: List[str], study_ba
     )
 
 async def build_evening_queue(deck: List[WordCard], study_bank: Dict[str, List[tuple]], word2id: Dict[str, int]) -> List[EveningItem]:
-     deck_words = [c.word for c in deck]
-     queue: List[EveningItem] = []
-     for card in deck:
-         ok_pool, bad_pool = await db_pick_evening_pools(word2id[card.word])
-         base_ok = random.choice(ok_pool) if ok_pool else Example(f"This is {card.word}.", f"Это {card.word}.", [card.word], True)
-         bad_ex = random.choice(bad_pool) if bad_pool else make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
-         candidates = [base_ok] + ([bad_ex] if bad_ex else [])
-         ex = random.choice(candidates)
-         
-         queue.append(EveningItem(example=ex, employee_card=True))
-     random.shuffle(queue)
-     return queue
+    deck_words = [c.word for c in deck]
+    queue: List[EveningItem] = []
+    for card in deck:
+        ok_pool, bad_pool = await db_pick_evening_pools(word2id.get(card.word, 0))
+
+        # OK-кандидат
+        if ok_pool:
+            src = random.choice(ok_pool)
+            base_ok = Example(src.text, src.text_ru, [card.word], True)
+        else:
+            base_ok = Example(f"This is {card.word}.", f"Это {card.word}.", [card.word], True)
+
+        # BAD-кандидат
+        bad_ex = None
+        if bad_pool:
+            srcb = random.choice(bad_pool)
+            bad_ex = Example(
+                srcb.text, srcb.text_ru, [card.word], False,
+                explanation="Есть ошибка в предложении."
+            )
+        else:
+            # fallback: подмена слова из твоего study_bank
+            bad_ex = make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
+
+        candidates = [base_ok] + ([bad_ex] if bad_ex else [])
+        ex = random.choice(candidates)
+        queue.append(EveningItem(example=ex, employee_card=True))
+
+    random.shuffle(queue)
+    return queue
 
 
 # --- DB helpers for content (NEW) ---
@@ -447,17 +465,24 @@ async def start_day(cb: CallbackQuery):
     s.results.clear()
     s.morning_idx = 0
     s.evening_idx = 0
-    # bank = WORD_BANK.get(s.level) or B1_ADJ
-    # k = min(5, len(bank)) or 1
-    # s.deck = random.sample(bank, k=k)
+
+    # Пытаемся набрать колоду из БД
     s.deck, s.word2id = await db_pick_deck(s.level, s.pos, k=5)
+
+    # Фолбэк на хардкод-банк, если из БД ничего не пришло
+    if not s.deck:
+        bank = WORD_BANK.get(s.level) or B1_ADJ
+        k = min(5, len(bank)) or 1
+        s.deck = random.sample(bank, k=k)
+        s.word2id = {c.word: 0 for c in s.deck}  # 0 => db-пулы вернут пусто, пойдём по фолбэкам
+
     s.study_bank = collect_study_bank(s.deck)
+
     # старт новой сессии в БД
     try:
         uid = await ensure_user(cb.from_user.id)
         s.session_id = await start_session(uid, s.level)
     except Exception as e:
-        # временный лог в чат и в stdout
         print("start_day DB ERROR:", repr(e))
         await cb.message.answer(f"⚠️ start_day DB ERROR: {e!r}")
         s.session_id = 0  # офлайн-режим
@@ -465,6 +490,7 @@ async def start_day(cb: CallbackQuery):
     await cb.message.answer("📘 Этап 1: Определимся со словами")
     await send_next_morning(cb.message, s)
     await cb.answer()
+
 
 @dp.callback_query(F.data == "morning_next")
 async def on_morning_next(cb: CallbackQuery):
