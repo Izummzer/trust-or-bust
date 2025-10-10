@@ -45,8 +45,7 @@ word,kind,en,ru
 "conjecture","alt_ok","We treat it as a conjecture, not a fact.","Мы рассматриваем это как догадку, а не факт."
 "conjecture","bad","His conjeture was interesting.","«Conjeture». (ошибка)"
 "conscience","ok","He acted out of conscience.","Он действовал из совести."
-"conscience","alt_ok","Her conscience bothered her conscience.","Её совесть мучила её совесть."  
-(исправь “conscience bothered her conscience” может быть странно, но смысл передан)  
+"conscience","alt_ok","Her conscience bothered her mind.","Её совесть мучила её ум."  
 "conscience","bad","He acted out of consience.","«Consience». (ошибка)"
 "consensus","ok","They reached a consensus quickly.","Они быстро достигли консенсуса."
 "consensus","alt_ok","A consensus was necessary for progress.","Консенсус был необходим для прогресса."
