@@ -1,62 +1,62 @@
 level,pos,word,translation
-C1,adjectives,ambiguous,двусмысленный
-C1,adjectives,ample,обильный / достаточный
-C1,adjectives,arbitrary,произвольный
-C1,adjectives,assertive,уверенный в себе
-C1,adjectives,authentic,подлинный
-C1,adjectives,benevolent,доброжелательный
-C1,adjectives,coherent,связный / последовательный
-C1,adjectives,collaborative,совместный
-C1,adjectives,compelling,убедительный
-C1,adjectives,comprehensive,всесторонний
-C1,adjectives,conducive,способствующий
-C1,adjectives,conscientious,добросовестный
-C1,adjectives,conspicuous,заметный / бросающийся в глаза
-C1,adjectives,contingent,зависящий от обстоятельств
-C1,adjectives,credible,достоверный / заслуживающий доверия
-C1,adjectives,cumulative,накопительный
-C1,adjectives,credible,достоверный
-C1,adjectives,decisive,решающий / решительный
-C1,adjectives,deliberate,обдуманный / умышленный
-C1,adjectives,distinct,отличительный / ясный
-C1,adjectives,eloquent,красноречивый
-C1,adjectives,feasible,осуществимый
-C1,adjectives,formidable,грозный / внушительный
-C1,adjectives,imminent,неизбежный / предстоящий
-C1,adjectives,impartial,беспристрастный
-C1,adjectives,inherent,присущий / неотъемлемый
-C1,adjectives,innovative,инновационный
-C1,adjectives,integral,неотъемлемый
-C1,adjectives,lucrative,прибыльный
-C1,adjectives,meticulous,дотошный
-C1,adjectives,notable,примечательный
-C1,adjectives,notorious,пресловутый / пользующийся дурной славой
-C1,adjectives,objective,объективный
-C1,adjectives,obsolete,устаревший
-C1,adjectives,pervasive,вездесущий / распространяющийся
-C1,adjectives,plausible,правдоподобный
-C1,adjectives,preliminary,предварительный
-C1,adjectives,prevalent,распространённый
-C1,adjectives,profound,глубокий / основательный
-C1,adjectives,prospective,перспективный
-C1,adjectives,rational,рациональный
-C1,adjectives,resilient,устойчивый / жизнестойкий
-C1,adjectives,resolute,решительный
-C1,adjectives,skeptical,скептический
-C1,adjectives,solitary,одинокий / уединённый
-C1,adjectives,spontaneous,спонтанный
-C1,adjectives,stringent,строгий / жёсткий
-C1,adjectives,subtle,тонкий / неуловимый
-C1,adjectives,sufficient,достаточный
-C1,adjectives,sustainable,устойчивый
-C1,adjectives,tedious,утомительный / скучный
-C1,adjectives,transparent,прозрачный
-C1,adjectives,unprecedented,беспрецедентный
-C1,adjectives,versatile,универсальный / разносторонний
-C1,adjectives,vigorous,энергичный
-C1,adjectives,vulnerable,уязвимый
-C1,adjectives,wholesome,полезный / здоровый
-C1,adjectives,worthwhile,стоящий
+C2,nouns,adversity,невзгоды
+C2,nouns,allegiance,верность / преданность
+C2,nouns,ambiguity,неопределённость / двусмысленность
+C2,nouns,aptitude,способность / склонность
+C2,nouns,aspiration,стремление / амбиция
+C2,nouns,assertion,утверждение / заявление
+C2,nouns,benchmark,эталон / ориентир
+C2,nouns,catalyst,катализатор / стимул
+C2,nouns,cognition,познание / восприятие
+C2,nouns,compliance,соблюдение / подчинение
+C2,nouns,connotation,подтекст / скрытый смысл
+C2,nouns,constraint,ограничение
+C2,nouns,credibility,достоверность / авторитет
+C2,nouns,criterion,критерий
+C2,nouns,deficiency,недостаток / дефицит
+C2,nouns,discrepancy,несоответствие / расхождение
+C2,nouns,divergence,расхождение / отклонение
+C2,nouns,eloquence,красноречие
+C2,nouns,endowment,дар / пожертвование
+C2,nouns,entitlement,право / привилегия
+C2,nouns,epiphany,озарение / прозрение
+C2,nouns,fallacy,заблуждение
+C2,nouns,feasibility,осуществимость
+C2,nouns,fluctuation,колебание
+C2,nouns,gratitude,благодарность
+C2,nouns,hostility,враждебность
+C2,nouns,impartiality,беспристрастность
+C2,nouns,implication,подтекст / последствие
+C2,nouns,inception,начало / зарождение
+C2,nouns,ingenuity,изобретательность
+C2,nouns,integrity,честность / целостность
+C2,nouns,liability,ответственность / обязательство
+C2,nouns,longevity,долголетие
+C2,nouns,notion,понятие / представление
+C2,nouns,nuance,оттенок / нюанс
+C2,nouns,paradigm,парадигма
+C2,nouns,perseverance,настойчивость
+C2,nouns,plausibility,правдоподобие
+C2,nouns,precedent,прецедент
+C2,nouns,premise,предпосылка
+C2,nouns,proximity,близость
+C2,nouns,ramification,последствие / разветвление
+C2,nouns,reciprocity,взаимность
+C2,nouns,relevance,актуальность / значимость
+C2,nouns,reluctance,нежелание / сопротивление
+C2,nouns,resilience,устойчивость / жизнестойкость
+C2,nouns,sanction,санкция / разрешение
+C2,nouns,skepticism,скептицизм
+C2,nouns,solitude,одиночество
+C2,nouns,subtlety,тонкость / изящество
+C2,nouns,tenacity,упорство / настойчивость
+C2,nouns,tolerance,терпимость
+C2,nouns,transparency,прозрачность
+C2,nouns,unanimity,единодушие
+C2,nouns,versatility,гибкость / разносторонность
+C2,nouns,viability,жизнеспособность
+C2,nouns,vulnerability,уязвимость
+C2,nouns,zeal,рвение / усердие
 
 
 
