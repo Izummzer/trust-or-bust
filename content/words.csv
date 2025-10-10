@@ -1,63 +1,65 @@
 level,pos,word,translation
-C2,verbs,abdicate,отречься / отказаться
-C2,verbs,acquiesce,уступать / соглашаться без протеста
-C2,verbs,alleviate,облегчать / смягчать
-C2,verbs,appease,умиротворять / успокаивать
-C2,verbs,ascertain,устанавливать / удостоверяться
-C2,verbs,bolster,поддерживать / укреплять
-C2,verbs,capitalize,воспользоваться / капитализировать
-C2,verbs,coerce,принуждать / заставлять
-C2,verbs,complement,дополнять / сочетаться
-C2,verbs,concede,признавать / уступать
-C2,verbs,confer,совещаться / присваивать
-C2,verbs,contemplate,созерцать / размышлять
-C2,verbs,corroborate,подтверждать / подкреплять
-C2,verbs,curtail,сокращать / урезать
-C2,verbs,debunk,разоблачать / развенчивать
-C2,verbs,defy,бросать вызов / противостоять
-C2,verbs,deliberate,обдумывать / совещаться
-C2,verbs,denote,обозначать / означать
-C2,verbs,disclose,раскрывать / сообщать
-C2,verbs,disseminate,распространять / сеять
-C2,verbs,elicit,вызывать / извлекать
-C2,verbs,embody,олицетворять / воплощать
-C2,verbs,emphasize,подчёркивать
-C2,verbs,encroach,посягать / вторгаться
-C2,verbs,endure,терпеть / выносить
-C2,verbs,entail,влечь за собой / предполагать
-C2,verbs,enumerate,перечислять
-C2,verbs,exacerbate,обострять / усиливать
-C2,verbs,exemplify,иллюстрировать / служить примером
-C2,verbs,expedite,ускорять / способствовать
-C2,verbs,fluctuate,колебаться / меняться
-C2,verbs,foresee,предвидеть
-C2,verbs,hamper,препятствовать / мешать
-C2,verbs,imply,подразумевать
-C2,verbs,incite,побуждать / подстрекать
-C2,verbs,inhibit,подавлять / сдерживать
-C2,verbs,mediate,посредничать / урегулировать
-C2,verbs,mitigate,смягчать / уменьшать
-C2,verbs,perceive,воспринимать / понимать
-C2,verbs,perpetuate,увековечивать / сохранять
-C2,verbs,ponder,обдумывать / размышлять
-C2,verbs,postulate,предполагать / утверждать
-C2,verbs,presume,предполагать / допускать
-C2,verbs,reiterate,повторять / утверждать вновь
-C2,verbs,renounce,отрекаться / отказываться
-C2,verbs,repudiate,отвергать / отрицать
-C2,verbs,retain,сохранять / удерживать
-C2,verbs,scrutinize,внимательно изучать
-C2,verbs,solidify,укреплять / консолидировать
-C2,verbs,stipulate,оговаривать / предусматривать
-C2,verbs,substantiate,доказывать / обосновывать
-C2,verbs,succumb,поддаваться / уступать
-C2,verbs,supersede,заменять / вытеснять
-C2,verbs,underscore,подчеркивать / выделять
-C2,verbs,undermine,подрывать
-C2,verbs,uphold,поддерживать / защищать
-C2,verbs,utilize,использовать / применять
-C2,verbs,withstand,выдерживать / противостоять
-C2,verbs,yield,приносить / уступать
+C2,adjectives,abject,жалкий / унизительный
+C2,adjectives,adamant,непреклонный
+C2,adjectives,adroit,ловкий / искусный
+C2,adjectives,affluent,зажиточный / богатый
+C2,adjectives,altruistic,альтруистичный
+C2,adjectives,amenable,податливый / склонный соглашаться
+C2,adjectives,austere,строгий / аскетичный
+C2,adjectives,brazen,наглый / бесстыдный
+C2,adjectives,candid,откровенный / беспристрастный
+C2,adjectives,capricious,капризный / непостоянный
+C2,adjectives,clandestine,тайный / подпольный
+C2,adjectives,complacent,самодовольный
+C2,adjectives,conciliatory,примирительный
+C2,adjectives,conspicuous,заметный / бросающийся в глаза
+C2,adjectives,contemptuous,презрительный
+C2,adjectives,copious,обильный
+C2,adjectives,cryptic,загадочный / скрытый
+C2,adjectives,cursory,поверхностный / беглый
+C2,adjectives,decadent,упадочный / декадентский
+C2,adjectives,definitive,окончательный / авторитетный
+C2,adjectives,deleterious,вредный / пагубный
+C2,adjectives,derisive,насмешливый
+C2,adjectives,despondent,унылый / подавленный
+C2,adjectives,didactic,поучительный / дидактический
+C2,adjectives,discerning,проницательный
+C2,adjectives,disingenuous,неискренний / лукавый
+C2,adjectives,disparate,разнородный / несоизмеримый
+C2,adjectives,dogged,упорный / настойчивый
+C2,adjectives,dubious,сомнительный
+C2,adjectives,egregious,вопиющий / чудовищный
+C2,adjectives,elusive,неуловимый / трудный для понимания
+C2,adjectives,eminent,выдающийся
+C2,adjectives,emphatic,решительный / выразительный
+C2,adjectives,enigmatic,загадочный
+C2,adjectives,equitable,справедливый / беспристрастный
+C2,adjectives,erratic,неустойчивый / хаотичный
+C2,adjectives,esoteric,эзотерический / узкоспециальный
+C2,adjectives,exorbitant,чрезмерный / непомерный
+C2,adjectives,expedient,целесообразный / выгодный
+C2,adjectives,fastidious,привередливый / щепетильный
+C2,adjectives,fervent,пылкий / страстный
+C2,adjectives,flagrant,вопиющий / явный
+C2,adjectives,formidable,грозный / внушающий страх
+C2,adjectives,frivolous,легкомысленный
+C2,adjectives,furtive,скрытный / вороватый
+C2,adjectives,futile,тщетный / бесполезный
+C2,adjectives,haphazard,случайный / бессистемный
+C2,adjectives,heinous,чудовищный / отвратительный
+C2,adjectives,holistic,целостный / комплексный
+C2,adjectives,idiosyncratic,своеобразный / идиосинкратический
+C2,adjectives,illicit,незаконный
+C2,adjectives,immaterial,несущественный / невещественный
+C2,adjectives,impervious,невосприимчивый / непроницаемый
+C2,adjectives,implicit,подразумеваемый / неявный
+C2,adjectives,imprudent,неблагоразумный
+C2,adjectives,incisive,острый / меткий
+C2,adjectives,incongruous,несоответствующий / нелепый
+C2,adjectives,indelible,неизгладимый
+C2,adjectives,indispensable,незаменимый / необходимый
+C2,adjectives,inexorable,неумолимый / непреклонный
+
 
 
 
