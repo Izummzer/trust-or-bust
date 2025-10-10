@@ -1,8 +1,8 @@
 # bot/db.py
 import os, ssl, certifi, asyncpg
 from typing import Optional
-import csv
-from io import StringIO
+from pathlib import Path
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 _DB_POOL: Optional[asyncpg.Pool] = None
 
@@ -10,17 +10,39 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is missing")
 
-# В Railway + Supabase используем verify-full и корневой CA
-_SSL_CTX = ssl.create_default_context(cafile=certifi.where())
+def _ensure_sslmode_verify_full(dsn: str) -> str:
+    parts = urlparse(dsn)
+    q = dict(parse_qsl(parts.query, keep_blank_values=True))
+    # важно: verify-full (а не require), чтобы hostname проверялся корректно
+    q["sslmode"] = "verify-full"
+    parts = parts._replace(query=urlencode(q))
+    return urlunparse(parts)
+
+def _make_ssl_ctx() -> ssl.SSLContext:
+    """
+    Приоритетно Supabase CA (prod-ca-2021.crt), иначе — certifi bundle.
+    """
+    ca_path = Path("bot/certs/prod-ca-2021.crt")
+    if ca_path.exists():
+        ctx = ssl.create_default_context(cafile=str(ca_path))
+    else:
+        ctx = ssl.create_default_context(cafile=certifi.where())
+    # на всякий случай явно задаём строгую проверку
+    ctx.check_hostname = True
+    ctx.verify_mode = ssl.CERT_REQUIRED
+    return ctx
+
+_SSL_CTX = _make_ssl_ctx()
+_DSN_VERIFIED = _ensure_sslmode_verify_full(DATABASE_URL)
 
 async def get_pool() -> asyncpg.Pool:
     global _DB_POOL
     if _DB_POOL is None:
         _DB_POOL = await asyncpg.create_pool(
-            DATABASE_URL,
+            _DSN_VERIFIED,
             min_size=1, max_size=5,
             ssl=_SSL_CTX,
-            statement_cache_size=0  # важно из-за pgbouncer
+            statement_cache_size=0,  # важно из-за PgBouncer
         )
     return _DB_POOL
 
@@ -76,50 +98,3 @@ async def append_result(
                values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)""",
             session_id, item_index, sentence_en, sentence_ru, truth, user_choice, employee_card, outcome, delta, balance_after
         )
-
-async def get_user_stats(user_id: int) -> dict:
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        row = await conn.fetchrow(
-            """
-            select
-                count(*) as total,
-                count(*) filter (where r.truth = r.user_choice) as correct,
-                coalesce(sum(coalesce(r.delta,0)), 0) as sum_delta
-            from results r
-            join sessions s on s.id = r.session_id
-            where s.user_id = $1
-            """,
-            user_id
-        )
-        total = row["total"] or 0
-        correct = row["correct"] or 0
-        accuracy = round((correct/total)*100, 1) if total else 0.0
-        return {"total": total, "correct": correct, "accuracy": accuracy, "sum_delta": row["sum_delta"]}
-
-async def export_results_csv(user_id: int) -> bytes:
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        rows = await conn.fetch(
-            """
-            select
-                r.id, s.user_id, s.level, r.item_index,
-                r.sentence_en, r.sentence_ru,
-                r.truth, r.user_choice, r.employee_card, r.outcome,
-                r.delta, r.balance_after, r.created_at
-            from results r
-            join sessions s on s.id = r.session_id
-            where s.user_id = $1
-            order by r.created_at
-            """,
-            user_id
-        )
-        header = ["id","user_id","level","item_index","sentence_en","sentence_ru",
-                  "truth","user_choice","employee_card","outcome","delta",
-                  "balance_after","created_at"]
-        s = StringIO()
-        w = csv.writer(s)
-        w.writerow(header)
-        for r in rows:
-            w.writerow([r[h] for h in header])
-        return s.getvalue().encode("utf-8")
