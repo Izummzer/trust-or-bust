@@ -1,65 +1,65 @@
 level,pos,word,translation
-B2,adjectives,accurate,точный
-B2,adjectives,ambitious,целеустремлённый
-B2,adjectives,appropriate,уместный
-B2,adjectives,aware,осведомлённый
-B2,adjectives,brief,краткий
-B2,adjectives,capable,способный
-B2,adjectives,complex,сложный
-B2,adjectives,consistent,последовательный
-B2,adjectives,constructive,конструктивный
-B2,adjectives,creative,креативный
-B2,adjectives,critical,критический
-B2,adjectives,crucial,ключевой
-B2,adjectives,curious,любопытный
-B2,adjectives,decisive,решительный
-B2,adjectives,efficient,эффективный
-B2,adjectives,flexible,гибкий
-B2,adjectives,genuine,искренний
-B2,adjectives,impartial,беспристрастный
-B2,adjectives,independent,независимый
-B2,adjectives,innovative,инновационный
-B2,adjectives,logical,логичный
-B2,adjectives,meticulous,дотошный
-B2,adjectives,moderate,умеренный
-B2,adjectives,objective,объективный
-B2,adjectives,obvious,очевидный
-B2,adjectives,outgoing,общительный
-B2,adjectives,outstanding,выдающийся
-B2,adjectives,patient,терпеливый
-B2,adjectives,practical,практичный
-B2,adjectives,precise,точный
-B2,adjectives,productive,продуктивный
-B2,adjectives,reasonable,разумный
-B2,adjectives,reliable,надёжный
-B2,adjectives,responsible,ответственный
-B2,adjectives,rigid,жёсткий
-B2,adjectives,sensible,здравомыслящий
-B2,adjectives,significant,значительный
-B2,adjectives,sincere,искренний
-B2,adjectives,skilled,умелый
-B2,adjectives,straightforward,прямолинейный
-B2,adjectives,subtle,утончённый
-B2,adjectives,suitable,подходящий
-B2,adjectives,thorough,тщательный
-B2,adjectives,tolerant,терпимый
-B2,adjectives,transparent,прозрачный
-B2,adjectives,unique,уникальный
-B2,adjectives,unpredictable,непредсказуемый
-B2,adjectives,versatile,разносторонний
-B2,adjectives,visible,заметный
-B2,adjectives,vulnerable,уязвимый
-B2,adjectives,accurate,точный
-B2,adjectives,adaptable,адаптивный
-B2,adjectives,confident,уверенный
-B2,adjectives,dedicated,преданный делу
-B2,adjectives,determined,решительный
-B2,adjectives,enthusiastic,восторженный
-B2,adjectives,experienced,опытный
-B2,adjectives,helpful,отзывчивый
-B2,adjectives,insightful,проницательный
-B2,adjectives,resourceful,находчивый
-B2,adjectives,trustworthy,заслуживающий доверия
+C1,nouns,abundance,изобилие
+C1,nouns,advancement,продвижение
+C1,nouns,adversary,противник
+C1,nouns,apparatus,аппарат
+C1,nouns,apprehension,опасение
+C1,nouns,articulation,чёткость выражения
+C1,nouns,assertion,утверждение
+C1,nouns,atmosphere,атмосфера
+C1,nouns,autonomy,автономия
+C1,nouns,benchmark,эталон
+C1,nouns,capability,способность
+C1,nouns,coherence,связность
+C1,nouns,cohort,группа
+C1,nouns,competency,компетенция
+C1,nouns,conjecture,догадка
+C1,nouns,conscience,совесть
+C1,nouns,consensus,консенсус
+C1,nouns,constituent,компонент
+C1,nouns,constraint,ограничение
+C1,nouns,convention,конвенция
+C1,nouns,correlation,корреляция
+C1,nouns,criterion,критерий
+C1,nouns,culmination,кульминация
+C1,nouns,debate,дебаты
+C1,nouns,deviation,отклонение
+C1,nouns,discrepancy,расхождение
+C1,nouns,disposition,расположение
+C1,nouns,distinction,отличие
+C1,nouns,diversity,разнообразие
+C1,nouns,elaboration,разработка
+C1,nouns,endeavor,попытка / усилие
+C1,nouns,entitlement,право
+C1,nouns,enumeration,перечисление
+C1,nouns,epitome,воплощение
+C1,nouns,expenditure,расход
+C1,nouns,facilitation,облегчение
+C1,nouns,fluctuation,колебание
+C1,nouns,foundation,основа
+C1,nouns,hierarchy,иерархия
+C1,nouns,implementation,внедрение
+C1,nouns,implication,вовлечение / последствие
+C1,nouns,incentive,стимул
+C1,nouns,incidence,частота
+C1,nouns,inception,начало
+C1,nouns,infrastructure,инфраструктура
+C1,nouns,integration,интеграция
+C1,nouns,interpretation,интерпретация
+C1,nouns,intuition,интуиция
+C1,nouns,legitimacy,законность / легитимность
+C1,nouns,modality,модальность
+C1,nouns,oversight,надзор
+C1,nouns,parameter,параметр
+C1,nouns,precedent,прецедент
+C1,nouns,prevalence,распространённость
+C1,nouns,repercussion,отклик / последствие
+C1,nouns,robustness,надёжность / устойчивость
+C1,nouns,strategist,стратег
+C1,nouns,validation,валидация
+C1,nouns,variance,вариация
+C1,nouns,virtue,добродетель
+
 
 
 
