@@ -456,8 +456,12 @@ async def start_day(cb: CallbackQuery):
     try:
         uid = await ensure_user(cb.from_user.id)
         s.session_id = await start_session(uid, s.level)
-    except Exception:
+    except Exception as e:
+        # временный лог в чат и в stdout
+        print("start_day DB ERROR:", repr(e))
+        await cb.message.answer(f"⚠️ start_day DB ERROR: {e!r}")
         s.session_id = 0  # офлайн-режим
+
     await cb.message.answer("📘 Этап 1: Определимся со словами")
     await send_next_morning(cb.message, s)
     await cb.answer()
@@ -545,8 +549,9 @@ async def on_believe(cb: CallbackQuery):
                     0,
                     s.balance
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            print("append_result ERROR:", repr(e))
+            await cb.message.answer(f"⚠️ append_result ERROR: {e!r}")
         await cb.message.answer("👍 Совпало. Идём дальше.")
         s.evening_idx += 1
         await send_next_evening(cb.message, s)
@@ -645,8 +650,9 @@ async def on_dispute(cb: CallbackQuery):
                     "dispute_concede",
                     -50, s.balance
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            print("append_result ERROR:", repr(e))
+            await cb.message.answer(f"⚠️ append_result ERROR: {e!r}")
         s.results[idx]["result"] = "dispute_concede"
         s.results[idx]["delta"] = -50
         await cb.message.answer(f"{GREEN} «Ты прав». Вы платите сотруднику €50.")
@@ -661,9 +667,10 @@ async def on_dispute(cb: CallbackQuery):
                         your_choice, s.results[idx]["employee_card"],
                         "dispute_check_win",
                         +50, s.balance
-                    )
-            except Exception:
-                pass
+                        )
+            except Exception as e:
+                print("append_result ERROR:", repr(e))
+                await cb.message.answer(f"⚠️ append_result ERROR: {e!r}")
             s.results[idx]["result"] = "dispute_check_win"
             s.results[idx]["delta"] = +50
             await cb.message.answer(f"""{CHECK} Проверка: вы оказались правы. Сотрудник пристыжен.
@@ -681,8 +688,9 @@ async def on_dispute(cb: CallbackQuery):
                         "dispute_check_lose",
                         -100, s.balance
                     )
-            except Exception:
-                pass
+            except Exception as e:
+                print("append_result ERROR:", repr(e))
+                await cb.message.answer(f"⚠️ append_result ERROR: {e!r}")
             s.results[idx]["result"] = "dispute_check_lose"
             s.results[idx]["delta"] = -100
             await cb.message.answer(f"""{CROSS} Проверка: вы оказались неправы. Сотрудник ликует.
@@ -728,29 +736,29 @@ async def export_csv(cb: CallbackQuery):
         await cb.message.answer_document(buf, caption="📄 Экспорт из БД готов.")
         await cb.answer()
         return
-    except Exception:
-        pass
+    except Exception as e:
+        print("export DB ERROR:", repr(e))
 
-    # 2) Fallback — твоя текущая выгрузка из оперативной памяти
-    filename = f"results_{cb.from_user.id}.csv"
-    with open(filename, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["sentence","truth","your_choice","employee_card","result","delta","balance_after_row"])
-        bal = 0
-        for r in s.results:
-            if isinstance(r.get("delta"), int):
-                bal += r["delta"]
-            w.writerow([
-                r.get("text",""),
-                r.get("truth",""),
-                r.get("your_choice",""),
-                r.get("employee_card",""),
-                r.get("result",""),
-                r.get("delta",""),
-                bal
-            ])
-    await cb.message.answer_document(FSInputFile(filename), caption="📄 Экспорт (локально) готов.")
-    await cb.answer()
+        # 2) Fallback — твоя текущая выгрузка из оперативной памяти
+        filename = f"results_{cb.from_user.id}.csv"
+        with open(filename, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["sentence","truth","your_choice","employee_card","result","delta","balance_after_row"])
+            bal = 0
+            for r in s.results:
+                if isinstance(r.get("delta"), int):
+                    bal += r["delta"]
+                w.writerow([
+                    r.get("text",""),
+                    r.get("truth",""),
+                    r.get("your_choice",""),
+                    r.get("employee_card",""),
+                    r.get("result",""),
+                    r.get("delta",""),
+                    bal
+                ])
+        await cb.message.answer_document(FSInputFile(filename), caption="📄 Экспорт (локально) готов.")
+        await cb.answer()
 
 
 @dp.message(Command("stats"))
@@ -786,7 +794,8 @@ async def on_stats(m: Message):
             f"Точность: {acc}%\n"
             f"Суммарная дельта: €{row['sum_delta']}\n"
         )
-    except Exception:
+    except Exception as e:
+        print("stats DB ERROR:", repr(e))
         await m.answer(
             "📊 Локальная статистика (за текущую сессию)\n"
             f"Всего ответов: {local_total}\n"
