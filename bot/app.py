@@ -856,7 +856,7 @@ async def dbwho(m: Message):
 
 @dp.message(Command("dbcount"))
 async def dbcount(m: Message):
-    """Показывает количество записей и 'последнее обновление' по ключевым таблицам."""
+    """Показывает количество записей и 'последнее обновление' по ключевым таблицам (под твою схему)."""
     try:
         pool = await get_pool()
         q = """
@@ -866,9 +866,7 @@ async def dbcount(m: Message):
           from users
         ),
         s as (
-          select count(*) as cnt,
-                 max(greatest(coalesce(started_at, '-infinity'::timestamp),
-                              coalesce(finished_at, '-infinity'::timestamp))) as updated
+          select count(*) as cnt, max(created_at) as updated
           from sessions
         ),
         r as (
