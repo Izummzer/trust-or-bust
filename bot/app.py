@@ -35,6 +35,8 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is missing")
 
+BAD_DB_SHARE = 0.25  # ~25% берем из examples.kind='bad', остальное генерим подменой
+
 # ---------- ICONS ----------
 CHECK = "✅"
 CROSS = "❌"
@@ -265,30 +267,47 @@ def make_wrong_swapped_from_bank(base_word: str, deck_words: List[str], study_ba
         explanation="Ключевое слово подменено на другое изучаемое слово."
     )
 
-async def build_evening_queue(deck: List[WordCard], study_bank: Dict[str, List[tuple]], word2id: Dict[str, int]) -> List[EveningItem]:
+async def build_evening_queue(
+    deck: List[WordCard],
+    study_bank: Dict[str, List[tuple]],
+    word2id: Dict[str, int]
+) -> List[EveningItem]:
     deck_words = [c.word for c in deck]
     queue: List[EveningItem] = []
+
     for card in deck:
         ok_pool, bad_pool = await db_pick_evening_pools(word2id.get(card.word, 0))
 
-        # OK-кандидат
+        # OK-кандидат (из БД если есть; иначе фолбэк)
         if ok_pool:
             src = random.choice(ok_pool)
             base_ok = Example(src.text, src.text_ru, [card.word], True)
         else:
-            base_ok = Example(f"This is {card.word}.", f"Это {card.word}.", [card.word], True)
+            # фолбэк на хардкод
+            base_ok = STAGE1_EXAMPLES.get(card.word)
+            if not base_ok:
+                alt = ALT_OK.get(card.word, [])
+                base_ok = alt[0] if alt else Example(
+                    f"This is {card.word}.", f"Это {card.word}.", [card.word], True
+                )
 
-        # BAD-кандидат
-        bad_ex = None
+        # Генерация BAD
+        dyn_bad = make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
+        db_bad = None
         if bad_pool:
             srcb = random.choice(bad_pool)
-            bad_ex = Example(
+            db_bad = Example(
                 srcb.text, srcb.text_ru, [card.word], False,
                 explanation="Есть ошибка в предложении."
             )
+
+        # Микс с долей BAD_DB_SHARE из БД и остальное — динамика
+        bad_ex = None
+        roll = random.random()
+        if roll < BAD_DB_SHARE and db_bad is not None:
+            bad_ex = db_bad
         else:
-            # fallback: подмена слова из твоего study_bank
-            bad_ex = make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
+            bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
 
         candidates = [base_ok] + ([bad_ex] if bad_ex else [])
         ex = random.choice(candidates)
@@ -296,6 +315,7 @@ async def build_evening_queue(deck: List[WordCard], study_bank: Dict[str, List[t
 
     random.shuffle(queue)
     return queue
+
 
 
 # --- DB helpers for content (NEW) ---
@@ -354,6 +374,24 @@ async def db_pick_evening_pools(word_id: int):
     ok_pool = [Example(r["en"], r["ru"], uses=[], is_correct=True) for r in ok_rows]
     bad_pool = [Example(r["en"], r["ru"], uses=[], is_correct=False) for r in bad_rows]
     return ok_pool, bad_pool
+
+def make_employee_wrong_correction_from_correct(ex: Example, deck_words: List[str]) -> Optional[tuple]:
+    """
+    Из корректного примера делаем «ошибочную правку сотрудника» подменой ключевого слова
+    на другое из сегодняшней колоды. Возвращает (wrong_text, same_ru) либо None.
+    """
+    if not ex.uses:
+        return None
+    base_word = ex.uses[0]
+    candidates = [w for w in deck_words if w.lower() != base_word.lower()]
+    if not candidates:
+        return None
+    replacement = random.choice(candidates)
+    wrong_text = swap_word_everywhere(ex.text, base_word, replacement)
+    if wrong_text == ex.text:
+        return None
+    return wrong_text, ex.text_ru
+
 
 # ---------- BOT ----------
 bot = Bot(BOT_TOKEN)
@@ -587,25 +625,35 @@ async def on_believe(cb: CallbackQuery):
     proposal = ex.employee_proposal
     proposal_ru = ex.employee_proposal_ru
 
+    # if not employee_card:
+    #     # сотрудник сказал ❌
+    #     if truth is True:
+    #         # игрок прав, сотрудник ошибается → он предложит «поправку», которая ошибочна:
+    #         # сделаем её как «слово-подмена»
+    #         deck_words = [c.word for c in s.deck]
+    #         wrong_pair = None
+    #         # соберём корректный Example, из которого сделаем ошибочный
+    #         src_ok = Example(text=ex.text, text_ru=ex.text_ru, uses=ex.uses, is_correct=True)
+    #         # переиспользуем механизм замены:
+    #         # NOTE: здесь мы оставляем перевод оригинала
+    #         if src_ok.uses:
+    #             base_word = src_ok.uses[0]
+    #             candidates = [w for w in deck_words if w.lower() != base_word.lower()]
+    #             if candidates:
+    #                 repl = random.choice(candidates)
+    #                 wrong_text = swap_word_everywhere(src_ok.text, base_word, repl)
+    #                 if wrong_text != src_ok.text:
+    #                     proposal, proposal_ru = wrong_text, src_ok.text_ru
     if not employee_card:
-        # сотрудник сказал ❌
         if truth is True:
-            # игрок прав, сотрудник ошибается → он предложит «поправку», которая ошибочна:
-            # сделаем её как «слово-подмена»
+            # ЗАМЕНИ весь блок генерации wrong_text на:
             deck_words = [c.word for c in s.deck]
-            wrong_pair = None
-            # соберём корректный Example, из которого сделаем ошибочный
-            src_ok = Example(text=ex.text, text_ru=ex.text_ru, uses=ex.uses, is_correct=True)
-            # переиспользуем механизм замены:
-            # NOTE: здесь мы оставляем перевод оригинала
-            if src_ok.uses:
-                base_word = src_ok.uses[0]
-                candidates = [w for w in deck_words if w.lower() != base_word.lower()]
-                if candidates:
-                    repl = random.choice(candidates)
-                    wrong_text = swap_word_everywhere(src_ok.text, base_word, repl)
-                    if wrong_text != src_ok.text:
-                        proposal, proposal_ru = wrong_text, src_ok.text_ru
+            pair = make_employee_wrong_correction_from_correct(
+                Example(text=ex.text, text_ru=ex.text_ru, uses=ex.uses, is_correct=True),
+                deck_words
+            )
+            if pair:
+                proposal, proposal_ru = pair[0], pair[1]
         else:
             # истина = ошибка, сотрудник прав → предложит корректный вариант
             if not proposal and ex.uses:
