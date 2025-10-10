@@ -1,64 +1,67 @@
 level,pos,word,translation
-B1,adjectives,reliable,надёжный
-B1,adjectives,efficient,эффективный
-B1,adjectives,flexible,гибкий
-B1,adjectives,confident,уверенный
-B1,adjectives,accurate,точный
-B1,adjectives,productive,продуктивный
-B1,adjectives,creative,креативный
-B1,adjectives,meticulous,дотошный
-B1,adjectives,versatile,разносторонний
-B1,adjectives,robust,устойчивый
-B1,adjectives,scalable,масштабируемый
-B1,adjectives,redundant,избыточный
-B1,adjectives,consistent,последовательный
-B1,adjectives,responsible,ответственный
-B1,adjectives,independent,самостоятельный
-B1,adjectives,innovative,инновационный
-B1,adjectives,logical,логичный
-B1,adjectives,ambitious,амбициозный
-B1,adjectives,objective,объективный
-B1,adjectives,decisive,решительный
-B1,adjectives,approachable,открытый для общения
-B1,adjectives,attentive,внимательный
-B1,adjectives,careful,осторожный
-B1,adjectives,competent,компетентный
-B1,adjectives,cooperative,сотрудничающий
-B1,adjectives,dependable,надёжный
-B1,adjectives,diligent,прилежный
-B1,adjectives,experienced,опытный
-B1,adjectives,focused,сосредоточенный
-B1,adjectives,helpful,отзывчивый
-B1,adjectives,honest,честный
-B1,adjectives,insightful,проницательный
-B1,adjectives,motivated,мотивированный
-B1,adjectives,organized,организованный
-B1,adjectives,patient,терпеливый
-B1,adjectives,polite,вежливый
-B1,adjectives,practical,практичный
-B1,adjectives,precise,точный
-B1,adjectives,proactive,инициативный
-B1,adjectives,realistic,реалистичный
-B1,adjectives,receptive,восприимчивый
-B1,adjectives,resilient,стрессоустойчивый
-B1,adjectives,respectful,уважительный
-B1,adjectives,skilled,умелый
-B1,adjectives,supportive,поддерживающий
-B1,adjectives,tactful,тактичный
-B1,adjectives,thoughtful,внимательный к другим
-B1,adjectives,trustworthy,достойный доверия
-B1,adjectives,understanding,понимающий
-B1,adjectives,vigilant,бдительный
-B1,adjectives,visionary,дальновидный
-B1,adjectives,willing,готовый помочь
-B1,adjectives,wise,мудрый
-B1,adjectives,adaptable,адаптивный
-B1,adjectives,assertive,напористый
-B1,adjectives,balanced,уравновешенный
-B1,adjectives,cautious,осмотрительный
-B1,adjectives,collaborative,коллаборативный
-B1,adjectives,analytical,аналитический
-B1,adjectives,strategic,стратегический
+B1,verbs,negotiate,вести переговоры
+B1,verbs,implement,внедрять
+B1,verbs,manage,управлять
+B1,verbs,deliver,доставлять
+B1,verbs,perform,выполнять
+B1,verbs,achieve,достигать
+B1,verbs,approve,одобрять
+B1,verbs,avoid,избегать
+B1,verbs,compare,сравнивать
+B1,verbs,complain,жаловаться
+B1,verbs,confirm,подтверждать
+B1,verbs,consider,рассматривать
+B1,verbs,contribute,вносить вклад
+B1,verbs,control,контролировать
+B1,verbs,decide,решать
+B1,verbs,define,определять
+B1,verbs,delay,задерживать
+B1,verbs,depend,зависеть
+B1,verbs,describe,описывать
+B1,verbs,develop,развивать
+B1,verbs,disagree,не соглашаться
+B1,verbs,discuss,обсуждать
+B1,verbs,encourage,поощрять
+B1,verbs,estimate,оценивать
+B1,verbs,expect,ожидать
+B1,verbs,explain,объяснять
+B1,verbs,express,выражать
+B1,verbs,handle,обрабатывать
+B1,verbs,improve,улучшать
+B1,verbs,include,включать
+B1,verbs,increase,увеличивать
+B1,verbs,inform,информировать
+B1,verbs,maintain,поддерживать
+B1,verbs,measure,измерять
+B1,verbs,mention,упоминать
+B1,verbs,monitor,отслеживать
+B1,verbs,offer,предлагать
+B1,verbs,organize,организовывать
+B1,verbs,prepare,готовить
+B1,verbs,provide,предоставлять
+B1,verbs,reduce,сокращать
+B1,verbs,refuse,отказывать
+B1,verbs,release,выпускать
+B1,verbs,report,сообщать
+B1,verbs,require,требовать
+B1,verbs,respond,отвечать
+B1,verbs,review,просматривать
+B1,verbs,select,выбирать
+B1,verbs,solve,решать
+B1,verbs,suggest,предлагать
+B1,verbs,support,поддерживать
+B1,verbs,supply,снабжать
+B1,verbs,target,нацеливаться
+B1,verbs,train,тренировать
+B1,verbs,update,обновлять
+B1,verbs,verify,проверять
+B1,verbs,win,побеждать
+B1,verbs,fail,терпеть неудачу
+B1,verbs,adapt,адаптироваться
+B1,verbs,assume,предполагать
+B1,verbs,clarify,уточнять
+B1,verbs,collaborate,сотрудничать
+
 
 
 
