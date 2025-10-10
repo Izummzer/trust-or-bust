@@ -854,6 +854,31 @@ async def dbwho(m: Message):
     except Exception as e:
         await m.answer(f"DB who ERROR: {e!r}")
 
+@dp.message(Command("dbcount"))
+async def dbcount(m: Message):
+    """Показывает количество записей в ключевых таблицах (для проверки seed и логирования)."""
+    try:
+        pool = await get_pool()
+        q = """
+        select
+          (select count(*) from users) as users,
+          (select count(*) from sessions) as sessions,
+          (select count(*) from results) as results,
+          (select count(*) from words) as words,
+          (select count(*) from examples) as examples
+        """
+        row = await pool.fetchrow(q)
+        txt = (
+            f"📊 DB counts:\n"
+            f"users: {row['users']}\n"
+            f"sessions: {row['sessions']}\n"
+            f"results: {row['results']}\n"
+            f"words: {row['words']}\n"
+            f"examples: {row['examples']}"
+        )
+        await m.answer(txt)
+    except Exception as e:
+        await m.answer(f"⚠️ dbcount ERROR: {e!r}")
 
 
 # ---------- RUN ----------
