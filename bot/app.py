@@ -320,13 +320,14 @@ async def build_evening_queue(
                 explanation="Есть ошибка в предложении."
             )
 
-        # Микс с долей BAD_DB_SHARE из БД и остальное — динамика
-        bad_ex = None
-        roll = random.random()
-        if roll < BAD_DB_SHARE and db_bad is not None:
-            bad_ex = db_bad
-        else:
-            bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
+        # # Микс с долей BAD_DB_SHARE из БД и остальное — динамика
+        # bad_ex = None
+        # roll = random.random()
+        # if roll < BAD_DB_SHARE and db_bad is not None:
+        #     bad_ex = db_bad
+        # else:
+        #     bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
+        bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
 
         candidates = [base_ok] + ([bad_ex] if bad_ex else [])
         ex = random.choice(candidates)
@@ -421,7 +422,7 @@ async def on_start(m: Message):
     # регистрация в БД (без падения, если БД недоступна)
     try:
         uid = await ensure_user(m.from_user.id)
-        suffix = f"\nВаш профиль создан (id={uid})." if uid else ""
+        # suffix = f"\nВаш профиль создан (id={uid})." if uid else ""
     except Exception:
         suffix = ""
     USERS[m.from_user.id] = UserState()
