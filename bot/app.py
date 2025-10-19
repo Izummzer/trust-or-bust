@@ -35,7 +35,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is missing")
 
-BAD_DB_SHARE = 0.25  # ~25% берем из examples.kind='bad', остальное генерим подменой
+BAD_DB_SHARE = 0.05  # ~ % берем из examples.kind='bad', остальное генерим подменой
 
 # ---------- ICONS ----------
 CHECK = "✅"
@@ -326,7 +326,6 @@ async def build_evening_queue(
         roll = random.random()
         if roll < BAD_DB_SHARE and db_bad is not None:
             bad_ex = db_bad
-            # bad_ex.text_ru = ""
         else:
             bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
 
