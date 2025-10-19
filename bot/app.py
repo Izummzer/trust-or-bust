@@ -423,6 +423,7 @@ async def on_start(m: Message):
     try:
         uid = await ensure_user(m.from_user.id)
         # suffix = f"\nВаш профиль создан (id={uid})." if uid else ""
+        suffix = ""
     except Exception:
         suffix = ""
     USERS[m.from_user.id] = UserState()
