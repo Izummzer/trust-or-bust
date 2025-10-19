@@ -1,6 +1,5 @@
 # Trust or Bust — English Game (app.py)
 # aiogram v3, утро/вечер, выбор уровня, «замена ключевого слова»,
-# экспорт CSV. DB используется только для ensure_user.
 
 import os, csv, random, re
 from io import StringIO
@@ -200,7 +199,7 @@ def kb_main_menu():
     kb = InlineKeyboardBuilder()
     kb.button(text=f"{START_EMOJI} К игре", callback_data="start_day")
     kb.button(text=f"{MAG} Выбрать уровень", callback_data="choose_level")
-    kb.button(text=f"{EXPORT_EMOJI} Экспорт CSV", callback_data="export_csv")
+    # kb.button(text=f"{EXPORT_EMOJI} Экспорт CSV", callback_data="export_csv")
     kb.adjust(1)
     return kb.as_markup()
 
