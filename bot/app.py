@@ -115,11 +115,28 @@ B2_ADJ = [
     WordCard("redundant","избыточный"),
 ]
 
+C1_ADJ = [
+    WordCard("meticulous","дотошный"),
+    WordCard("versatile","разносторонний"),
+    WordCard("robust","надёжный/устойчивый"),
+    WordCard("scalable","масштабируемый"),
+    WordCard("redundant","избыточный"),
+]
+
+C2_ADJ = [
+    WordCard("meticulous","дотошный"),
+    WordCard("versatile","разносторонний"),
+    WordCard("robust","надёжный/устойчивый"),
+    WordCard("scalable","масштабируемый"),
+    WordCard("redundant","избыточный"),
+]
+
 WORD_BANK: Dict[str, List[WordCard]] = {
-    "A1": A2_ADJ,   # следующий уровень
-    "A2": B1_ADJ,
-    "B1": B2_ADJ,
+    "A2": A2_ADJ,   
+    "B1": B1_ADJ,
     "B2": B2_ADJ,
+    "C1": C1_ADJ,
+    "C2": C2_ADJ,
 }
 
 # Утренние (один корректный пример на слово)
@@ -189,7 +206,7 @@ def kb_main_menu():
 
 def kb_levels():
     kb = InlineKeyboardBuilder()
-    for lvl in ["A1","A2","B1","B2"]:
+    for lvl in ["A2","B1","B2","C1","C2"]:
         kb.button(text=lvl, callback_data=f"set_level:{lvl}")
     kb.adjust(4)
     return kb.as_markup()
@@ -434,7 +451,7 @@ async def show_process(cb: CallbackQuery):
 
 @dp.callback_query(F.data == "choose_level")
 async def choose_level(cb: CallbackQuery):
-    await cb.message.answer("Выберите уровень: A1 / A2 / B1 / B2", reply_markup=kb_levels())
+    await cb.message.answer("Выберите уровень: A2 / B1 / B2 / C1 / C2", reply_markup=kb_levels())
     await cb.answer()
 
 @dp.callback_query(F.data.startswith("set_level:"))
