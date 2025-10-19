@@ -306,6 +306,7 @@ async def build_evening_queue(
         roll = random.random()
         if roll < BAD_DB_SHARE and db_bad is not None:
             bad_ex = db_bad
+            bad_ex.text_ru = ""
         else:
             bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
 
