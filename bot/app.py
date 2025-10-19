@@ -34,7 +34,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is missing")
 
-BAD_DB_SHARE = 0.05  # ~ % берем из examples.kind='bad', остальное генерим подменой
+# BAD_DB_SHARE = 0.05  # ~ % берем из examples.kind='bad', остальное генерим подменой
 
 # ---------- ICONS ----------
 CHECK = "✅"
@@ -309,25 +309,25 @@ async def build_evening_queue(
 
         # Генерация BAD
         dyn_bad = make_wrong_swapped_from_bank(card.word, deck_words, study_bank)
-        db_bad = None
-        if bad_pool:
-            srcb = random.choice(bad_pool)
-            db_bad = Example(
-                srcb.text, 
-                "", # srcb.text_ru, 
-                [card.word], 
-                False,
-                explanation="Есть ошибка в предложении."
-            )
+        # db_bad = None
+        # if bad_pool:
+        #     srcb = random.choice(bad_pool)
+        #     db_bad = Example(
+        #         srcb.text, 
+        #         "", # srcb.text_ru, 
+        #         [card.word], 
+        #         False,
+        #         explanation="Есть ошибка в предложении."
+        #     )
 
         # # Микс с долей BAD_DB_SHARE из БД и остальное — динамика
+        bad_ex = dyn_bad
         # bad_ex = None
         # roll = random.random()
         # if roll < BAD_DB_SHARE and db_bad is not None:
         #     bad_ex = db_bad
         # else:
         #     bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
-        bad_ex = dyn_bad or db_bad  # если динамика не вышла — возьмем БД-вариант, если есть
 
         candidates = [base_ok] + ([bad_ex] if bad_ex else [])
         ex = random.choice(candidates)
